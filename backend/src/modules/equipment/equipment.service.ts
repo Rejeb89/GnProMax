@@ -229,4 +229,30 @@ export class EquipmentService {
 
     return { data: transactions, total, skip, take };
   }
+
+  async getLowStock(currentUser: CurrentUser, take: number = 5) {
+    const lowStockEquipment = await this.prisma.equipment.findMany({
+      where: {
+        companyId: currentUser.companyId,
+        isActive: true,
+      },
+      select: {
+        id: true,
+        name: true,
+        category: true,
+        quantity: true,
+        lowStockThreshold: true,
+        serialNumber: true,
+      },
+      orderBy: { quantity: 'asc' },
+      take,
+    });
+
+    // Filter only items where quantity is less than or equal to threshold
+    return lowStockEquipment.filter(
+      (item: { quantity: number; lowStockThreshold?: number | null }) =>
+        item.quantity <= (item.lowStockThreshold ?? 0),
+    );
+  }
 }
+

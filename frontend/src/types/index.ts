@@ -14,6 +14,26 @@ export interface User {
   lastName?: string;
   companyId: string;
   roleId: string;
+  role?: string;
+  isActive?: boolean;
+  branches?: UserBranch[];
+}
+
+export interface UserBranch {
+  userId: string;
+  branchId: string;
+  branch?: Branch;
+}
+
+export interface Branch {
+  id: string;
+  companyId: string;
+  code: string;
+  name: string;
+  address?: string;
+  phone?: string;
+  email?: string;
+  isActive: boolean;
 }
 
 export interface RegisterData {

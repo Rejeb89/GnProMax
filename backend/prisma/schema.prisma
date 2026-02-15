@@ -234,6 +234,9 @@ model Equipment {
   location          String?
   assignedTo        String?
   
+  quantity          Int       @default(0)
+  lowStockThreshold Int       @default(5)
+  
   warrantyExpiry    DateTime?
   maintenanceDate   DateTime?
   nextMaintenanceDate DateTime?

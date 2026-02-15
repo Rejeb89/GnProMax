@@ -1,0 +1,131 @@
+export const ar = {
+  // Auth
+  login: 'دخول',
+  register: 'تسجيل',
+  email: 'البريد الإلكتروني',
+  password: 'كلمة المرور',
+  firstName: 'الاسم الأول',
+  lastName: 'الاسم الأخير',
+  companyName: 'اسم الشركة',
+  username: 'اسم المستخدم',
+  loginButton: 'دخول',
+  registerButton: 'إنشاء حساب',
+  invalidEmailOrPassword: 'البريد الإلكتروني أو كلمة المرور غير صحيحة',
+  accountCreated: 'تم إنشاء الحساب بنجاح',
+
+  // Navigation
+  dashboard: 'لوحة التحكم',
+  employees: 'الموظفون',
+  vehicles: 'الوسائل',
+  equipment: 'التجهيز',
+  finance: 'المالية',
+  settings: 'الإعدادات',
+  logout: 'تسجيل الخروج',
+
+  // Dashboard
+  welcomeBack: 'أهلا وسهلا بك',
+  totalEmployees: 'إجمالي الموظفين',
+  totalVehicles: 'إجمالي الوسائل',
+  totalEquipment: 'إجمالي التجهيز',
+  totalExpenses: 'إجمالي النفقات',
+
+  // Settings
+  applicationSettings: 'إعدادات التطبيق',
+  siteName: 'اسم الموقع',
+  supportEmail: 'بريد الدعم الفني',
+  itemsPerPage: 'عدد العناصر في الصفحة',
+  enableFeatureX: 'تفعيل الميزة X',
+  save: 'حفظ',
+  saving: 'جاري الحفظ...',
+  saveSuccess: 'تم الحفظ بنجاح',
+  invalidEmail: 'البريد الإلكتروني غير صحيح',
+  invalidItemsPerPage: 'يجب أن يكون عدد العناصر رقم صحيح >= 1',
+  failedToLoadSettings: 'فشل في تحميل الإعدادات',
+  failedToSaveSettings: 'فشل في حفظ الإعدادات',
+
+  // Employees
+  addEmployee: 'إضافة موظف',
+  employeeId: 'رقم الموظف',
+  designation: 'المسمى الوظيفي',
+  department: 'القسم',
+  phone: 'الهاتف',
+  address: 'العنوان',
+  deleteConfirm: 'هل أنت متأكد من الحذف؟',
+  delete: 'حذف',
+  edit: 'تعديل',
+  cancel: 'إلغاء',
+
+  // Vehicles
+  addVehicle: 'إضافة وسيلة',
+  registrationNumber: 'رقم التسجيل',
+  make: 'الماركة',
+  model: 'الموديل',
+  year: 'السنة',
+  fuelType: 'نوع الوقود',
+  color: 'اللون',
+
+  // Equipment
+  addEquipment: 'إضافة تجهيز',
+  name: 'الاسم',
+  category: 'الفئة',
+  serialNumber: 'الرقم التسلسلي',
+  description: 'الوصف',
+
+  // Finance
+  addExpense: 'إضافة نفقة',
+  addRevenue: 'إضافة إيراد',
+  amount: 'المبلغ',
+  date: 'التاريخ',
+  status: 'الحالة',
+  approved: 'موافق عليه',
+  pending: 'قيد الانتظار',
+
+  // List Pages
+  list: 'قائمة',
+  total: 'الإجمالي',
+  noItemsFound: 'لم يتم العثور على عناصر',
+  employeeList: 'قائمة الموظفين',
+  vehicleList: 'قائمة الوسائل',
+  equipmentList: 'قائمة التجهيز',
+  expenseList: 'قائمة النفقات',
+  revenueList: 'قائمة الإيرادات',
+  budgetList: 'قائمة الميزانيات',
+  expenses: 'النفقات',
+  revenues: 'الإيرادات',
+  budgets: 'الميزانيات',
+  actions: 'الإجراءات',
+  clickHereToRegister: 'انقر هنا للتسجيل',
+  alreadyHaveAccount: 'هل لديك حساب بالفعل؟',
+  registrationFailed: 'فشل التسجيل',
+  registering: 'جاري التسجيل...',
+  createAccount: 'إنشاء حساب',
+  registerYourCompany: 'سجل شركتك وابدأ الآن',
+
+  // Low Stock
+  lowStock: 'المخزون المنخفض',
+  lowStockItems: 'التجهيزات بمخزون منخفض',
+  currentStock: 'المخزون الحالي',
+  threshold: 'الحد الأدنى',
+  quantity: 'الكمية',
+  handoverEquipment: 'تسليم التجهيزات',
+  releaseEquipment: 'تسليم/إرجاع',
+
+  // Add Equipment Form
+  equipmentName: 'اسم التجهيز',
+  equipmentCategory: 'صنف التجهيز',
+  lowStockThreshold: 'حد التنبيه للمخزون المنخفض',
+  sendingEntity: 'الجهة المرسلة',
+  notes: 'الملاحظات',
+  registerEquipment: 'تسجيل التجهيز',
+  equipmentRegistered: 'تم تسجيل التجهيز بنجاح',
+  operationNumber: 'رقم العملية',
+  back: 'عودة',
+  equipmentId: 'رقم التجهيز',
+
+  // Common
+  noData: 'لا توجد بيانات',
+  loading: 'جاري التحميل...',
+  error: 'حدث خطأ',
+  success: 'نجاح',
+  confirmation: 'تأكيد',
+};

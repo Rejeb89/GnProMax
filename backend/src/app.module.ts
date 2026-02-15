@@ -15,6 +15,7 @@ import { EquipmentModule } from './modules/equipment/equipment.module';
 import { FinanceModule } from './modules/finance/finance.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { AuditModule } from './modules/audit/audit.module';
+import { SettingsModule } from './modules/settings/settings.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { AuditModule } from './modules/audit/audit.module';
     FinanceModule,
     ReportsModule,
     AuditModule,
+    SettingsModule,
   ],
   controllers: [],
   providers: [],

@@ -113,6 +113,15 @@ export class EquipmentController {
     return this.equipmentService.recordTransaction(currentUser, createTransactionDto);
   }
 
+  @Get('low-stock/dashboard')
+  @RequirePermissions('equipment.read')
+  getLowStock(
+    @CurrentUser() currentUser: CurrentUser,
+    @Query('take') take: string = '5',
+  ) {
+    return this.equipmentService.getLowStock(currentUser, parseInt(take));
+  }
+
   @Get(':id/transactions')
   @RequirePermissions('equipment.read')
   getTransactionHistory(

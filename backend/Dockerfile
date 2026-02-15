@@ -13,6 +13,7 @@ RUN npm ci
 # Copy source code
 COPY src ./src
 COPY prisma ./prisma
+COPY scripts ./scripts
 
 # Build application
 RUN npm run build
@@ -35,6 +36,7 @@ RUN npm ci --only=production && npm cache clean --force
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./.prisma
+COPY --from=builder /app/scripts ./scripts
 
 # Generate Prisma client
 RUN npm run prisma:generate
@@ -49,5 +51,5 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
 
-# Start application
-CMD ["npm", "run", "start:prod"]
+# Start application (run seed script then start)
+CMD ["sh", "-c", "if [ \"${RUN_SEED_ON_STARTUP:-false}\" = \"true\" ]; then node scripts/create-admin.js || true; fi; npm run start:prod"]

@@ -1,5 +1,5 @@
 import apiClient from './client';
-import { LoginResponse, RegisterData } from '@/types';
+import { LoginResponse, RegisterData, User } from '@/types';
 
 export const authService = {
   login: async (email: string, password: string): Promise<LoginResponse> => {
@@ -14,6 +14,11 @@ export const authService = {
 
   refreshToken: async (refreshToken: string): Promise<LoginResponse> => {
     const response = await apiClient.post('/auth/refresh', { refreshToken });
+    return response.data;
+  },
+
+  getCurrentUser: async (): Promise<User> => {
+    const response = await apiClient.get('/auth/me');
     return response.data;
   },
 };

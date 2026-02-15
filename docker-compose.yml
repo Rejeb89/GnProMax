@@ -41,6 +41,8 @@ services:
       API_PREFIX: api/v1
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
       BCRYPT_ROUNDS: ${BCRYPT_ROUNDS:-10}
+      # Control whether to run seed script on container startup (true/false)
+      RUN_SEED_ON_STARTUP: ${RUN_SEED_ON_STARTUP:-false}
     ports:
       - "3000:3000"
     volumes:

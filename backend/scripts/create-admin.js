@@ -19,13 +19,31 @@ async function main() {
     console.log('Creating/updating Admin role...');
     const adminRole = await prisma.role.upsert({
       where: { name: 'Admin' },
-      update: { isActive: true },
+      update: { 
+        isActive: true,
+        permissions: [
+          'users.create','users.read','users.update','users.delete',
+          'roles.read','roles.create','roles.update','roles.delete',
+          'branches.read','branches.create','branches.update','branches.delete',
+          'employees.read','employees.create','employees.update','employees.delete',
+          'vehicles.read','vehicles.create','vehicles.update','vehicles.delete',
+          'equipment.read','equipment.create','equipment.update','equipment.delete',
+          'finance.read','finance.create','finance.update','finance.delete',
+          'reports.read','audit.read','settings.read','settings.update'
+        ]
+      },
       create: {
         name: 'Admin',
         description: 'Administrator role',
         permissions: [
           'users.create','users.read','users.update','users.delete',
-          'roles.read','branches.read','employees.read','vehicles.read','finance.read','reports.read','audit.read'
+          'roles.read','roles.create','roles.update','roles.delete',
+          'branches.read','branches.create','branches.update','branches.delete',
+          'employees.read','employees.create','employees.update','employees.delete',
+          'vehicles.read','vehicles.create','vehicles.update','vehicles.delete',
+          'equipment.read','equipment.create','equipment.update','equipment.delete',
+          'finance.read','finance.create','finance.update','finance.delete',
+          'reports.read','audit.read','settings.read','settings.update'
         ],
         isSystem: true,
         isActive: true,
@@ -71,6 +89,23 @@ async function main() {
       } catch (err) {
         // ignore if already assigned
       }
+    }
+
+    // Ensure company has default settings
+    try {
+      const existing = await prisma.company.findUnique({ where: { id: company.id }, select: { settings: true } });
+      if (!existing || !existing.settings || Object.keys(existing.settings).length === 0) {
+        const defaultSettings = {
+          siteName: 'ERP Starter',
+          supportEmail: 'support@company.com',
+          itemsPerPage: 20,
+          enableFeatureX: false,
+        };
+        await prisma.company.update({ where: { id: company.id }, data: { settings: defaultSettings } });
+        console.log('Default settings applied for company');
+      }
+    } catch (err) {
+      console.warn('Failed to apply default settings:', err?.message || err);
     }
 
   } catch (error) {

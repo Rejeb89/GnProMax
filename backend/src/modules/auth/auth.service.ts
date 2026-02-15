@@ -231,7 +231,7 @@ export class AuthService {
     const branchIds = user.branches?.map((b: any) => b.branchId) || [];
 
     const payload = {
-      sub: user.id,
+      id: user.id,
       email: user.email,
       username: user.username,
       companyId: user.companyId,
