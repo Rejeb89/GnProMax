@@ -328,13 +328,16 @@ export class FinanceService {
       }),
     ]);
 
+    const totalExpensesAmount = Number(totalExpenses._sum.amount || 0);
+    const totalRevenuesAmount = Number(totalRevenues._sum.amount || 0);
+    const totalBudgetAmount = Number(totalBudget._sum.amount || 0);
+
     return {
       period: `${queryMonth}/${queryYear}`,
-      totalExpenses: totalExpenses._sum.amount || 0,
-      totalRevenues: totalRevenues._sum.amount || 0,
-      totalBudget: totalBudget._sum.amount || 0,
-      netProfit:
-        (totalRevenues._sum.amount || 0) - (totalExpenses._sum.amount || 0),
+      totalExpenses: totalExpensesAmount,
+      totalRevenues: totalRevenuesAmount,
+      totalBudget: totalBudgetAmount,
+      netProfit: totalRevenuesAmount - totalExpensesAmount,
     };
   }
 }

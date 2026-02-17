@@ -230,28 +230,30 @@ model Equipment {
   purchasePrice     Decimal?  @db.Decimal(12, 2)
   manufacturer      String?
   model             String?
-  
   location          String?
   assignedTo        String?
   
   quantity          Int       @default(0)
+  availableQuantity Int       @default(0)
   lowStockThreshold Int       @default(5)
   
   warrantyExpiry    DateTime?
   maintenanceDate   DateTime?
   nextMaintenanceDate DateTime?
   
-  status            String    @default("available") // available, in-use, maintenance, damaged
   condition         String?   // good, fair, poor
   notes             String?
+  
+  status            String    @default("available") // available, in-use, maintenance, damaged
+  
   isActive          Boolean   @default(true)
-
-  // Relations
-  transactions      EquipmentTransaction[]
-
+  
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
-
+  
+  // Relations
+  transactions      EquipmentTransaction[]
+  
   @@map("equipment")
 }
 
@@ -276,6 +278,30 @@ model EquipmentTransaction {
   updatedAt         DateTime @updatedAt
 
   @@map("equipment_transactions")
+}
+
+model Dispatch {
+  id                String   @id @default(cuid())
+  dispatchName       String
+  dispatchType       String    // sent, received
+  phoneNumber       String
+  
+  fromLocation       String?
+  toLocation         String?
+  equipmentName     String?
+  quantity          Int?
+  unit              String?
+  recipient         String?
+  notes             String?
+  status            String    @default("PENDING") // PENDING, IN_TRANSIT, DELIVERED, CANCELLED
+  
+  companyId         String
+  branchId          String?
+  createdBy         String?
+  updatedBy         String?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
 // ============== Finance Module ==============

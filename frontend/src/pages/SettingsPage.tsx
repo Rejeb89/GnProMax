@@ -22,9 +22,6 @@ function SettingsPage() {
   const { user, logout } = useAuthStore();
   const { t, language, setLanguage } = useLanguage();
   
-  // Debug logs
-  console.log('SettingsPage rendering, user:', user);
-  
   const [siteName, setSiteName] = useState('');
   const [supportEmail, setSupportEmail] = useState('');
   const [itemsPerPage, setItemsPerPage] = useState<number>(20);
@@ -50,9 +47,15 @@ function SettingsPage() {
   const [userError, setUserError] = useState<string | null>(null);
 
   // Check if current user is admin
-  const isAdmin = user?.email === 'admin@testcompany.com';
+  const isAdmin = (user?.role || '').toLowerCase() === 'admin';
   
-  console.log('Is admin check:', { isAdmin, userEmail: user?.email });
+  // Only log once when user changes
+  useEffect(() => {
+    if (user) {
+      console.log('SettingsPage rendering, user:', user);
+      console.log('Is admin check:', { isAdmin, userEmail: user?.email });
+    }
+  }, [user?.id]);
 
   useEffect(() => {
     (async () => {
@@ -76,27 +79,30 @@ function SettingsPage() {
 
   const loadUsers = async () => {
     try {
-      // Mock data for now - replace with actual API call when backend is ready
-      const mockUsers = [
-        {
-          id: '1',
-          email: 'admin@testcompany.com',
-          username: 'admin',
-          firstName: 'Admin',
-          lastName: 'User',
-          role: 'admin',
-          isActive: true,
-          branches: []
-        }
-      ];
+      // Use actual API call now
+      const usersData = await usersService.getAll();
+      console.log('Users API response:', usersData);
       
-      console.log('Loading users (mock):', mockUsers);
-      setUsers(mockUsers);
+      // Transform API data to match User interface
+      const transformedUsers = (usersData?.data || []).map((apiUser: any) => ({
+        id: apiUser.id,
+        email: apiUser.email,
+        username: apiUser.username,
+        firstName: apiUser.firstName,
+        lastName: apiUser.lastName,
+        companyId: apiUser.companyId,
+        roleId: apiUser.roleId,
+        role: apiUser.role?.name?.toLowerCase() || 'user', // Get role name from role object
+        isActive: apiUser.isActive,
+        branches: apiUser.branches || []
+      }));
       
-      // const usersData = await usersService.getAll();
-      // setUsers(usersData?.data || []);
+      console.log('Transformed users:', transformedUsers);
+      setUsers(transformedUsers);
     } catch (err: any) {
       console.error('Failed to load users:', err);
+      setUsers([]);
+      setUserError(err?.response?.data?.message || 'فشل في تحميل المستخدمين');
     }
   };
 
@@ -148,14 +154,16 @@ function SettingsPage() {
     setUserError(null);
     
     try {
-      // Convert NewUser to CreateUserDto format
+      // Convert NewUser to CreateUserDto format - use actual role IDs from database
       const createUserData = {
         email: newUser.email,
         username: newUser.username,
         password: newUser.password,
         firstName: newUser.firstName,
         lastName: newUser.lastName,
-        roleId: newUser.role === 'admin' ? '1' : newUser.role === 'manager' ? '2' : '3', // Map roles to IDs
+        roleId: newUser.role === 'admin' ? 'cmlnkm5020001js0q8zzq7z2w' : 
+                 newUser.role === 'manager' ? 'cmlnye1k40000sgcc4mlfh78w' : 
+                 'cmlnye1ke0001sgccjr2f6omy', // Use actual role IDs from database
       };
       
       console.log('Creating user with data:', createUserData);
@@ -324,6 +332,7 @@ function SettingsPage() {
               </div>
             </div>
 
+            
             {/* Language Settings */}
             <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-2xl font-bold mb-6">إعدادات اللغة</h2>
@@ -342,16 +351,18 @@ function SettingsPage() {
               </div>
             </div>
 
-            {/* Logout */}
+            {/* User Management */}
             <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-2xl font-bold mb-6">تسجيل الخروج</h2>
-              <p className="text-gray-600 mb-4">هل تريد تسجيل الخروج من حسابك؟</p>
-              <button
-                onClick={handleLogout}
-                className="px-6 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
-              >
-                {t('logout')}
-              </button>
+              <h2 className="text-2xl font-bold mb-6">إدارة المستخدمين</h2>
+              <div className="space-y-4">
+                <p className="text-gray-600">يمكنك الاطلاع على قائمة المستخدمين من خلال صفحة إدارة المستخدمين. إنشاء/حذف المستخدمين متاح فقط للمسؤول.</p>
+                <button
+                  onClick={() => navigate('/users')}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                >
+                  الذهاب إلى إدارة المستخدمين
+                </button>
+              </div>
             </div>
           </>
         )}

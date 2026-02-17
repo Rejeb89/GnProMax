@@ -4,10 +4,13 @@ import LoginPage from '@/pages/LoginPage';
 import RegisterPage from '@/pages/RegisterPage';
 import DashboardPage from '@/pages/DashboardPage';
 import SettingsPage from '@/pages/SettingsPage';
+import UsersPage from '@/pages/UsersPage';
 import EmployeesPage from '@/pages/EmployeesPage';
 import VehiclesPage from '@/pages/VehiclesPage';
 import EquipmentPage from '@/pages/EquipmentPage';
 import AddEquipmentPage from '@/pages/AddEquipmentPage';
+import EquipmentDetailsPage from '@/pages/EquipmentDetailsPage';
+import EquipmentHandoverPage from '@/pages/EquipmentHandoverPage';
 import FinancePage from '@/pages/FinancePage';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { LanguageProvider, useLanguage } from '@/i18n/LanguageContext';
@@ -70,12 +73,24 @@ function AppContent() {
           element={<ProtectedRoute><AddEquipmentPage /></ProtectedRoute>}
         />
         <Route
-          path="/finance"
-          element={<ProtectedRoute><FinancePage /></ProtectedRoute>}
+          path="/equipment/handover"
+          element={<ProtectedRoute><EquipmentHandoverPage /></ProtectedRoute>}
+        />
+        <Route
+          path="/equipment/:id"
+          element={<ProtectedRoute><EquipmentDetailsPage /></ProtectedRoute>}
         />
         <Route
           path="/settings"
           element={<ProtectedRoute><SettingsPage /></ProtectedRoute>}
+        />
+        <Route
+          path="/users"
+          element={<ProtectedRoute><UsersPage /></ProtectedRoute>}
+        />
+        <Route
+          path="/finance"
+          element={<ProtectedRoute><FinancePage /></ProtectedRoute>}
         />
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
       </Routes>

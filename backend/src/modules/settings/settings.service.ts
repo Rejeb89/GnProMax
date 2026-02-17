@@ -16,7 +16,9 @@ export class SettingsService {
   async updateSettings(companyId: string, settings: Partial<any>) {
     // Merge with existing settings to avoid wiping unspecified keys
     const existing = await this.getSettings(companyId);
-    const merged = { ...(existing || {}), ...(settings || {}) };
+    const existingObj = existing && typeof existing === 'object' ? existing : {};
+    const settingsObj = settings && typeof settings === 'object' ? settings : {};
+    const merged = { ...existingObj, ...settingsObj };
     const updated = await this.prisma.company.update({
       where: { id: companyId },
       data: { settings: merged },

@@ -22,50 +22,73 @@ async function main() {
     // await prisma.branch.deleteMany();
     // await prisma.company.deleteMany();
 
+    const companyName = process.env.SEED_COMPANY_NAME || 'Default Company';
+    const companyEmail = process.env.SEED_COMPANY_EMAIL || 'admin@default.company';
+    const companyPhone = process.env.SEED_COMPANY_PHONE || '+0000000000';
+
     // Create company
-    const company = await prisma.company.create({
-      data: {
-        name: 'Test Company',
-        description: 'Test company for development',
-        email: 'test@testcompany.com',
-        phone: '+1234567890',
-        address: '123 Test Street',
-        city: 'Test City',
-        state: 'TS',
-        country: 'Test Country',
-        zipCode: '12345',
+    const company = await prisma.company.upsert({
+      where: { name: companyName },
+      update: {
+        email: companyEmail,
+        phone: companyPhone,
+      },
+      create: {
+        name: companyName,
+        description: process.env.SEED_COMPANY_DESCRIPTION || 'Company',
+        email: companyEmail,
+        phone: companyPhone,
+        address: process.env.SEED_COMPANY_ADDRESS || undefined,
+        city: process.env.SEED_COMPANY_CITY || undefined,
+        state: process.env.SEED_COMPANY_STATE || undefined,
+        country: process.env.SEED_COMPANY_COUNTRY || undefined,
+        zipCode: process.env.SEED_COMPANY_ZIP || undefined,
       },
     });
 
     console.log('✅ Created company:', company.name);
 
     // Create main branch
-    const mainBranch = await prisma.branch.create({
-      data: {
-        code: 'HQ',
-        name: 'Headquarters',
-        city: 'Test City',
-        state: 'TS',
-        country: 'Test Country',
+    const mainBranch = await prisma.branch.upsert({
+      where: { companyId_code: { companyId: company.id, code: process.env.SEED_BRANCH_CODE || 'HQ' } },
+      update: {
+        name: process.env.SEED_BRANCH_NAME || 'Headquarters',
+      },
+      create: {
+        code: process.env.SEED_BRANCH_CODE || 'HQ',
+        name: process.env.SEED_BRANCH_NAME || 'Headquarters',
+        city: process.env.SEED_BRANCH_CITY || undefined,
+        state: process.env.SEED_BRANCH_STATE || undefined,
+        country: process.env.SEED_BRANCH_COUNTRY || undefined,
         company: { connect: { id: company.id } },
       },
     });
 
     console.log('✅ Created main branch:', mainBranch.name);
 
-    // Create secondary branch
-    const secondaryBranch = await prisma.branch.create({
-      data: {
-        code: 'BR-01',
-        name: 'Branch One',
-        city: 'Other City',
-        state: 'OS',
-        country: 'Test Country',
-        company: { connect: { id: company.id } },
-      },
-    });
+    // Create secondary branch only if configured
+    const secondaryBranchCode = process.env.SEED_SECONDARY_BRANCH_CODE;
+    const secondaryBranchName = process.env.SEED_SECONDARY_BRANCH_NAME;
+    const secondaryBranch = secondaryBranchCode
+      ? await prisma.branch.upsert({
+          where: { companyId_code: { companyId: company.id, code: secondaryBranchCode } },
+          update: {
+            name: secondaryBranchName || secondaryBranchCode,
+          },
+          create: {
+            code: secondaryBranchCode,
+            name: secondaryBranchName || secondaryBranchCode,
+            city: process.env.SEED_SECONDARY_BRANCH_CITY || undefined,
+            state: process.env.SEED_SECONDARY_BRANCH_STATE || undefined,
+            country: process.env.SEED_SECONDARY_BRANCH_COUNTRY || undefined,
+            company: { connect: { id: company.id } },
+          },
+        })
+      : null;
 
-    console.log('✅ Created secondary branch:', secondaryBranch.name);
+    if (secondaryBranch) {
+      console.log('✅ Created secondary branch:', secondaryBranch.name);
+    }
 
     // Create Admin role with all permissions
     const adminPermissions = [
@@ -112,20 +135,48 @@ async function main() {
       'audit.read',
     ];
 
-    const adminRole = await prisma.role.create({
-      data: {
+    const adminRole = await prisma.role.upsert({
+      where: { name: 'Admin' },
+      update: {
+        permissions: adminPermissions,
+        isSystem: true,
+        isActive: true,
+      },
+      create: {
         name: 'Admin',
         permissions: adminPermissions,
-        systemRole: true,
-        company: { connect: { id: company.id } },
+        isSystem: true,
+        isActive: true,
       },
     });
 
     console.log('✅ Created Admin role');
 
     // Create Manager role
-    const managerRole = await prisma.role.create({
-      data: {
+    const managerRole = await prisma.role.upsert({
+      where: { name: 'Manager' },
+      update: {
+        permissions: [
+          'users.read',
+          'roles.read',
+          'branches.read',
+          'employees.create',
+          'employees.read',
+          'employees.update',
+          'vehicles.create',
+          'vehicles.read',
+          'vehicles.update',
+          'equipment.read',
+          'equipment.update',
+          'finance.read',
+          'finance.create',
+          'reports.read',
+          'audit.read',
+        ],
+        isSystem: false,
+        isActive: true,
+      },
+      create: {
         name: 'Manager',
         permissions: [
           'users.read',
@@ -144,16 +195,28 @@ async function main() {
           'reports.read',
           'audit.read',
         ],
-        systemRole: false,
-        company: { connect: { id: company.id } },
+        isSystem: false,
+        isActive: true,
       },
     });
 
     console.log('✅ Created Manager role');
 
     // Create Employee role
-    const employeeRole = await prisma.role.create({
-      data: {
+    const employeeRole = await prisma.role.upsert({
+      where: { name: 'Employee' },
+      update: {
+        permissions: [
+          'users.read',
+          'employees.read',
+          'vehicles.read',
+          'equipment.read',
+          'reports.read',
+        ],
+        isSystem: false,
+        isActive: true,
+      },
+      create: {
         name: 'Employee',
         permissions: [
           'users.read',
@@ -162,22 +225,35 @@ async function main() {
           'equipment.read',
           'reports.read',
         ],
-        systemRole: false,
-        company: { connect: { id: company.id } },
+        isSystem: false,
+        isActive: true,
       },
     });
 
     console.log('✅ Created Employee role');
 
     // Create admin user
-    const hashedPassword = await bcrypt.hash('Admin@123456', 10);
+    const adminEmail = process.env.SEED_ADMIN_EMAIL || 'admin@default.company';
+    const adminUsername = process.env.SEED_ADMIN_USERNAME || 'admin';
+    const adminPassword = process.env.SEED_ADMIN_PASSWORD || 'Admin@123456';
+    const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
-    const adminUser = await prisma.user.create({
-      data: {
-        email: 'admin@testcompany.com',
+    const adminUser = await prisma.user.upsert({
+      where: { email: adminEmail },
+      update: {
+        username: adminUsername,
         password: hashedPassword,
-        role: { connect: { id: adminRole.id } },
-        company: { connect: { id: company.id } },
+        roleId: adminRole.id,
+        companyId: company.id,
+        isActive: true,
+      },
+      create: {
+        email: adminEmail,
+        username: adminUsername,
+        password: hashedPassword,
+        roleId: adminRole.id,
+        companyId: company.id,
+        isActive: true,
       },
     });
 
@@ -191,155 +267,65 @@ async function main() {
       },
     });
 
-    // Assign admin to secondary branch
-    await prisma.userBranch.create({
-      data: {
-        user: { connect: { id: adminUser.id } },
-        branch: { connect: { id: secondaryBranch.id } },
-      },
-    });
+    if (secondaryBranch) {
+      try {
+        await prisma.userBranch.create({
+          data: {
+            user: { connect: { id: adminUser.id } },
+            branch: { connect: { id: secondaryBranch.id } },
+          },
+        });
+      } catch (e) {
+        // ignore if already assigned
+      }
+    }
 
     console.log('✅ Assigned admin user to branches');
 
-    // Create manager user
-    const managerUser = await prisma.user.create({
-      data: {
-        email: 'manager@testcompany.com',
-        password: hashedPassword,
-        role: { connect: { id: managerRole.id } },
-        company: { connect: { id: company.id } },
-      },
-    });
-
-    await prisma.userBranch.create({
-      data: {
-        user: { connect: { id: managerUser.id } },
-        branch: { connect: { id: mainBranch.id } },
-      },
-    });
-
-    console.log('✅ Created manager user');
-
-    // Create test employees
-    const employees = [];
-    for (let i = 1; i <= 5; i++) {
-      const employee = await prisma.employee.create({
-        data: {
-          employeeId: `EMP${String(i).padStart(3, '0')}`,
-          firstName: `Employee${i}`,
-          lastName: `Test${i}`,
-          email: `employee${i}@testcompany.com`,
-          phone: `+123456789${i}`,
-          department: ['Operations', 'HR', 'IT', 'Finance', 'Sales'][i - 1],
-          designation: ['Manager', 'Officer', 'Lead', 'Analyst', 'Executive'][
-            i - 1
-          ],
-          dateOfJoining: new Date('2023-01-01'),
-          branch: { connect: { id: mainBranch.id } },
-          company: { connect: { id: company.id } },
+    // Create manager user if configured
+    const managerEmail = process.env.SEED_MANAGER_EMAIL;
+    const managerUsername = process.env.SEED_MANAGER_USERNAME;
+    const managerPassword = process.env.SEED_MANAGER_PASSWORD;
+    if (managerEmail && managerUsername && managerPassword) {
+      const managerHashed = await bcrypt.hash(managerPassword, 10);
+      const managerUser = await prisma.user.upsert({
+        where: { email: managerEmail },
+        update: {
+          username: managerUsername,
+          password: managerHashed,
+          roleId: managerRole.id,
+          companyId: company.id,
+          isActive: true,
+        },
+        create: {
+          email: managerEmail,
+          username: managerUsername,
+          password: managerHashed,
+          roleId: managerRole.id,
+          companyId: company.id,
+          isActive: true,
         },
       });
-      employees.push(employee);
-      console.log(`✅ Created employee: ${employee.firstName} ${employee.lastName}`);
-    }
 
-    // Create test vehicles
-    for (let i = 1; i <= 3; i++) {
-      await prisma.vehicle.create({
-        data: {
-          registrationNumber: `ABC-${1000 + i}`,
-          make: ['Toyota', 'Honda', 'Ford'][i - 1],
-          model: ['Camry', 'Civic', 'F-150'][i - 1],
-          year: 2023,
-          type: ['Sedan', 'Sedan', 'Truck'][i - 1],
-          color: ['Black', 'White', 'Red'][i - 1],
-          vin: `VIN00000000000000${i}`,
-          fuelType: 'Petrol',
-          engineCapacity: 2.0,
-          driver: { connect: { id: employees[i - 1].id } },
-          branch: { connect: { id: mainBranch.id } },
-          company: { connect: { id: company.id } },
-        },
-      });
-      console.log(`✅ Created vehicle: ${['Toyota Camry', 'Honda Civic', 'Ford F-150'][i - 1]}`);
-    }
+      try {
+        await prisma.userBranch.create({
+          data: {
+            user: { connect: { id: managerUser.id } },
+            branch: { connect: { id: mainBranch.id } },
+          },
+        });
+      } catch (e) {
+        // ignore if already assigned
+      }
 
-    // Create test equipment
-    for (let i = 1; i <= 5; i++) {
-      await prisma.equipment.create({
-        data: {
-          name: `Equipment ${i}`,
-          category: ['IT', 'Office', 'Tools', 'Safety', 'Other'][i - 1],
-          serialNumber: `SN-${String(i).padStart(5, '0')}`,
-          description: `Test equipment item ${i}`,
-          purchaseDate: new Date('2023-01-01'),
-          purchasePrice: 1000 + i * 100,
-          warranty: i % 2 === 0,
-          warrantyExpiry: new Date('2025-01-01'),
-          condition: 'Good',
-          branch: { connect: { id: mainBranch.id } },
-          company: { connect: { id: company.id } },
-        },
-      });
-      console.log(`✅ Created equipment: Equipment ${i}`);
-    }
-
-    // Create test budgets
-    for (let i = 1; i <= 3; i++) {
-      await prisma.budget.create({
-        data: {
-          name: `Q${i} Budget`,
-          amount: 100000 * i,
-          category: ['Operations', 'Marketing', 'IT'][i - 1],
-          startDate: new Date(`2024-0${i}-01`),
-          endDate: new Date(`2024-0${i + 1}-01`),
-          branch: { connect: { id: mainBranch.id } },
-          company: { connect: { id: company.id } },
-        },
-      });
-      console.log(`✅ Created budget: Q${i} Budget`);
-    }
-
-    // Create test expenses
-    for (let i = 1; i <= 3; i++) {
-      await prisma.expense.create({
-        data: {
-          description: `Expense Item ${i}`,
-          amount: 5000 * i,
-          category: ['Operations', 'Supplies', 'Travel'][i - 1],
-          status: 'approved',
-          date: new Date(),
-          submittedBy: { connect: { id: adminUser.id } },
-          branch: { connect: { id: mainBranch.id } },
-          company: { connect: { id: company.id } },
-        },
-      });
-      console.log(`✅ Created expense: Expense Item ${i}`);
-    }
-
-    // Create test revenues
-    for (let i = 1; i <= 3; i++) {
-      await prisma.revenue.create({
-        data: {
-          description: `Revenue Item ${i}`,
-          amount: 10000 * i,
-          category: ['Sales', 'Services', 'Other'][i - 1],
-          date: new Date(),
-          branch: { connect: { id: mainBranch.id } },
-          company: { connect: { id: company.id } },
-        },
-      });
-      console.log(`✅ Created revenue: Revenue Item ${i}`);
+      console.log('✅ Created manager user');
     }
 
     console.log('\n✨ Database seed completed successfully!');
-    console.log('\n📝 Test Credentials:');
+    console.log('\n📝 Seed Credentials:');
     console.log('   Admin:');
-    console.log('   Email: admin@testcompany.com');
-    console.log('   Password: Admin@123456');
-    console.log('\n   Manager:');
-    console.log('   Email: manager@testcompany.com');
-    console.log('   Password: Admin@123456');
+    console.log(`   Email: ${adminEmail}`);
+    console.log(`   Password: ${adminPassword}`);
   } catch (error) {
     console.error('❌ Seed error:', error);
     throw error;

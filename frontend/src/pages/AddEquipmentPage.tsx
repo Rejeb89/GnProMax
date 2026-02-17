@@ -13,11 +13,13 @@ interface AddEquipmentFormData {
   sendingEntity: string;
   date: string;
   notes: string;
+  recipientUser?: string; // New field for recipient user
 }
 
 const AddEquipmentPage: React.FC = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const [formData, setFormData] = useState<AddEquipmentFormData>({
     equipmentName: '',
     equipmentCategory: '',
@@ -26,6 +28,7 @@ const AddEquipmentPage: React.FC = () => {
     sendingEntity: '',
     date: '',
     notes: '',
+    recipientUser: '', // Initialize new field
   });
   const [registering, setRegistering] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,30 +36,6 @@ const AddEquipmentPage: React.FC = () => {
   const [operationNumber, setOperationNumber] = useState<string | null>(null);
   const [nameSearch, setNameSearch] = useState('');
   const [categorySearch, setCategorySearch] = useState('');
-  const [showNameDropdown, setShowNameDropdown] = useState(false);
-  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-
-  // Mock data - في حالة حقيقية ستأتي من API
-  const equipmentNames = [
-    'كمبيوتر',
-    'طابعة',
-    'ماسح ضوئي',
-    'شاشة',
-    'لوحة مفاتيح',
-  ];
-  const equipmentCategories = [
-    'معدات مكتبية',
-    'معدات كهربائية',
-    'معدات ميكانيكية',
-    'أجهزة الحاسوب',
-  ];
-
-  const filteredNames = equipmentNames.filter((name) =>
-    name.includes(nameSearch)
-  );
-  const filteredCategories = equipmentCategories.filter((cat) =>
-    cat.includes(categorySearch)
-  );
 
   const handleRegister = async () => {
     // محاولة مطابقة قيم البحث مع الخيارات المتاحة
@@ -108,6 +87,7 @@ const AddEquipmentPage: React.FC = () => {
         serialNumber: `SN-${Date.now()}`,
         purchaseDate: updatedFormData.date ? new Date(updatedFormData.date).toISOString() : null,
         branchId,
+        // Remove recipientUser from payload as it's not in backend DTO
       };
 
       const created = await equipmentService.create(createPayload);
@@ -183,29 +163,9 @@ const AddEquipmentPage: React.FC = () => {
                     setNameSearch(e.target.value);
                     setFormData({ ...formData, equipmentName: e.target.value });
                   }}
-                  onFocus={() => setShowNameDropdown(true)}
-                  onBlur={() => setTimeout(() => setShowNameDropdown(false), 200)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-right"
                 />
-                {showNameDropdown && filteredNames.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded-lg shadow-lg mt-1 z-10 max-h-48 overflow-auto">
-                    {filteredNames.map((name) => (
-                      <div
-                        key={name}
-                        onClick={() => {
-                          setFormData({ ...formData, equipmentName: name });
-                          setNameSearch(name);
-                          setShowNameDropdown(false);
-                        }}
-                        className="px-3 py-2 hover:bg-blue-100 cursor-pointer text-right"
-                      >
-                        {name}
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
-              <p className="text-xs text-gray-500 mt-1">اختر من القائمة أو اكتب قيمة مخصصة</p>
             </div>
 
             {/* Equipment Category with Search Dropdown */}
@@ -222,29 +182,9 @@ const AddEquipmentPage: React.FC = () => {
                     setCategorySearch(e.target.value);
                     setFormData({ ...formData, equipmentCategory: e.target.value });
                   }}
-                  onFocus={() => setShowCategoryDropdown(true)}
-                  onBlur={() => setTimeout(() => setShowCategoryDropdown(false), 200)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-right"
                 />
-                {showCategoryDropdown && filteredCategories.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 bg-white border border-gray-300 rounded-lg shadow-lg mt-1 z-10 max-h-48 overflow-auto">
-                    {filteredCategories.map((cat) => (
-                      <div
-                        key={cat}
-                        onClick={() => {
-                          setFormData({ ...formData, equipmentCategory: cat });
-                          setCategorySearch(cat);
-                          setShowCategoryDropdown(false);
-                        }}
-                        className="px-3 py-2 hover:bg-blue-100 cursor-pointer text-right"
-                      >
-                        {cat}
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
-              <p className="text-xs text-gray-500 mt-1">اختر من القائمة أو اكتب قيمة مخصصة</p>
             </div>
 
             {/* Quantity */}
@@ -284,6 +224,19 @@ const AddEquipmentPage: React.FC = () => {
               />
             </div>
 
+            {/* Current User Display */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-900 mb-2">
+                المستخدم الحالي
+              </label>
+              <div className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-right">
+                {user?.firstName && user?.lastName 
+                  ? `${user.firstName} ${user.lastName} (${user.email})`
+                  : user?.email || 'غير معروف'
+                }
+              </div>
+            </div>
+
             {/* Sending Entity (Auto-save) */}
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-2">
@@ -299,6 +252,23 @@ const AddEquipmentPage: React.FC = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-right"
               />
               <p className="text-xs text-gray-500 mt-1">✓ يتم حفظ هذه البيانات تلقائيا</p>
+            </div>
+
+            {/* Recipient User Input */}
+            <div>
+              <label className="block text-sm font-medium text-gray-900 mb-2">
+                الترقيم الإداري
+              </label>
+              <input
+                type="text"
+                placeholder="أدخل الترقيم الإداري"
+                value={formData.recipientUser}
+                onChange={(e) =>
+                  setFormData({ ...formData, recipientUser: e.target.value })
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-right"
+              />
+              <p className="text-xs text-gray-500 mt-1">أدخل الترقيم الإداري يدوياً</p>
             </div>
 
             {/* Date */}

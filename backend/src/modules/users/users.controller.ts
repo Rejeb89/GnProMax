@@ -32,7 +32,6 @@ export class UsersController {
   }
 
   @Get()
-  @RequirePermissions('users.read')
   findAll(
     @CurrentUser() currentUser: CurrentUser,
     @Query('skip') skip: string = '0',
@@ -46,7 +45,6 @@ export class UsersController {
   }
 
   @Get(':id')
-  @RequirePermissions('users.read')
   findOne(
     @CurrentUser() currentUser: CurrentUser,
     @Param('id') id: string,

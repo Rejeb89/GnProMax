@@ -17,9 +17,14 @@ export class AuthService {
   async login(loginDto: LoginDto): Promise<AuthResponseDto> {
     const { email, password } = loginDto;
 
+    const normalizedEmail = (email || '').trim().toLowerCase();
+    const normalizedPassword = (password || '').trim();
+
+    this.logger.log(`Login attempt: email=${normalizedEmail}`);
+
     // Find user
     const user = await this.prisma.user.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
       include: {
         role: true,
         branches: true,
@@ -27,20 +32,27 @@ export class AuthService {
     });
 
     if (!user) {
+      this.logger.warn(`Login failed: user not found for email=${normalizedEmail}`);
       throw new UnauthorizedException('Invalid email or password');
     }
 
     // Verify password
     const isPasswordValid = await this.encryptionService.comparePassword(
-      password,
+      normalizedPassword,
       user.password,
     );
 
     if (!isPasswordValid) {
+      this.logger.warn(
+        `Login failed: password mismatch for email=${normalizedEmail} userId=${user.id}`,
+      );
       throw new UnauthorizedException('Invalid email or password');
     }
 
     if (!user.isActive) {
+      this.logger.warn(
+        `Login failed: inactive user for email=${normalizedEmail} userId=${user.id}`,
+      );
       throw new UnauthorizedException('User account is inactive');
     }
 
@@ -63,8 +75,8 @@ export class AuthService {
         id: user.id,
         email: user.email,
         username: user.username,
-        firstName: user.firstName,
-        lastName: user.lastName,
+        firstName: user.firstName ?? undefined,
+        lastName: user.lastName ?? undefined,
         companyId: user.companyId,
       },
     };
@@ -182,8 +194,8 @@ export class AuthService {
         id: user.id,
         email: user.email,
         username: user.username,
-        firstName: user.firstName,
-        lastName: user.lastName,
+        firstName: user.firstName ?? undefined,
+        lastName: user.lastName ?? undefined,
         companyId: user.companyId,
       },
     };
@@ -217,8 +229,8 @@ export class AuthService {
           id: user.id,
           email: user.email,
           username: user.username,
-          firstName: user.firstName,
-          lastName: user.lastName,
+          firstName: user.firstName ?? undefined,
+          lastName: user.lastName ?? undefined,
           companyId: user.companyId,
         },
       };

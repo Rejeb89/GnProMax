@@ -23,7 +23,7 @@ const LoginPage: React.FC = () => {
     setLoading(true);
 
     try {
-      const response = await authService.login(formData.email, formData.password);
+      const response = await authService.login(formData.email.trim(), formData.password.trim());
       setToken(response.accessToken);
       setRefreshToken(response.refreshToken);
       setUser(response.user);
@@ -40,15 +40,7 @@ const LoginPage: React.FC = () => {
       <div className="w-full max-w-md">
         <div className="bg-white rounded-lg shadow-lg p-8">
           <div className="flex justify-between items-center mb-2">
-            <h1 className="text-3xl font-bold text-gray-900">نظام ERP</h1>
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value as 'ar' | 'en')}
-              className="px-2 py-1 border border-gray-300 rounded text-sm"
-            >
-              <option value="ar">العربية</option>
-              <option value="en">English</option>
-            </select>
+            <h1 className="text-3xl font-bold text-gray-900 flex-1 text-center">نظام إدارة الوحدات الجهوية للحرس الوطني</h1>
           </div>
           <p className="text-center text-gray-600 mb-8">تخطيط موارد المؤسسة</p>
 

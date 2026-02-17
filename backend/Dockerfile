@@ -15,6 +15,9 @@ COPY src ./src
 COPY prisma ./prisma
 COPY scripts ./scripts
 
+# Generate Prisma client (needed for TypeScript build when schema changes)
+RUN npm run prisma:generate
+
 # Build application
 RUN npm run build
 

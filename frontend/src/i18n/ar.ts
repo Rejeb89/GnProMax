@@ -18,7 +18,7 @@ export const ar = {
   employees: 'الموظفون',
   vehicles: 'الوسائل',
   equipment: 'التجهيز',
-  finance: 'المالية',
+  finance: 'الاعتمادات المالية',
   settings: 'الإعدادات',
   logout: 'تسجيل الخروج',
 

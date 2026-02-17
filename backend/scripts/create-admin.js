@@ -50,9 +50,13 @@ async function main() {
       },
     });
 
-    const email = 'admin@testcompany.com';
-    const username = 'admin';
-    const plainPassword = 'Admin@123456';
+    const argEmail = process.argv[2];
+    const argUsername = process.argv[3];
+    const argPassword = process.argv[4];
+
+    const email = argEmail || process.env.ADMIN_EMAIL || 'admin@testcompany.com';
+    const username = argUsername || process.env.ADMIN_USERNAME || 'admin';
+    const plainPassword = argPassword || process.env.ADMIN_PASSWORD || 'Admin@123456';
 
     console.log('Hashing password...');
     const hashed = await bcrypt.hash(plainPassword, parseInt(process.env.BCRYPT_ROUNDS || '10', 10));
@@ -79,6 +83,15 @@ async function main() {
 
     console.log('Admin user ready:', email);
     console.log('Password:', plainPassword);
+
+    try {
+      const fresh = await prisma.user.findUnique({ where: { email } });
+      const match = await bcrypt.compare(plainPassword, fresh.password);
+      console.log('Password verify:', match);
+      console.log('User active:', fresh.isActive);
+    } catch (err) {
+      console.warn('Password verify failed:', err?.message || err);
+    }
 
     // Optionally attach to a branch if branches exist
     const branch = await prisma.branch.findFirst({ where: { companyId: company.id } });

@@ -6,7 +6,7 @@ export interface CreateUserData {
   password: string;
   firstName: string;
   lastName: string;
-  role: 'admin' | 'manager' | 'user';
+  roleId: string;
   branchIds?: string[];
 }
 
