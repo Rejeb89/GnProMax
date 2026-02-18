@@ -87,7 +87,7 @@ const AddEquipmentPage: React.FC = () => {
         serialNumber: `SN-${Date.now()}`,
         purchaseDate: updatedFormData.date ? new Date(updatedFormData.date).toISOString() : null,
         branchId,
-        // Remove recipientUser from payload as it's not in backend DTO
+        lowStockThreshold: Number(updatedFormData.lowStockThreshold) || 5,
       };
 
       const created = await equipmentService.create(createPayload);

@@ -149,6 +149,7 @@ const EquipmentHandoverPage: React.FC = () => {
     
     try {
       // Create handover transaction
+      // The backend will automatically update quantities or delete the equipment if it's a handover
       await equipmentService.recordTransaction({
         equipmentId: handoverData.equipmentId,
         transactionType: 'HANDOVER',
@@ -158,12 +159,6 @@ const EquipmentHandoverPage: React.FC = () => {
         notes: handoverData.notes,
         reference: `تسليم ${handoverData.equipmentName}`,
         createdBy: user?.id
-      });
-      
-      // Update equipment quantity
-      const newAvailableQuantity = (selectedEquipment?.availableQuantity || 0) - handoverData.quantity;
-      await equipmentService.update(handoverData.equipmentId, {
-        availableQuantity: newAvailableQuantity
       });
       
       // Reset form

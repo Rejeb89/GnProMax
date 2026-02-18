@@ -53,6 +53,18 @@ export class CreateEquipmentDto {
   @IsString()
   notes?: string;
 
+  @IsOptional()
+  @IsNumber()
+  quantity?: number;
+
+  @IsOptional()
+  @IsNumber()
+  availableQuantity?: number;
+
+  @IsOptional()
+  @IsNumber()
+  lowStockThreshold?: number;
+
   @IsString()
   branchId: string;
 }
@@ -81,6 +93,14 @@ export class UpdateEquipmentDto {
   @IsOptional()
   @IsString()
   status?: string;
+
+  @IsOptional()
+  @IsNumber()
+  quantity?: number;
+
+  @IsOptional()
+  @IsNumber()
+  availableQuantity?: number;
 
   @IsOptional()
   @IsString()

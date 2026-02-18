@@ -52,6 +52,7 @@ export class EquipmentService {
       data: {
         companyId: currentUser.companyId,
         ...createEquipmentDto,
+        availableQuantity: createEquipmentDto.availableQuantity ?? createEquipmentDto.quantity ?? 0,
         qrCode,
       },
     });
@@ -64,6 +65,7 @@ export class EquipmentService {
     const equipment = await this.prisma.equipment.findMany({
       where: {
         companyId: currentUser.companyId,
+        isActive: true,
       },
       include: {
         transactions: {
@@ -149,6 +151,7 @@ export class EquipmentService {
       where: {
         branchId,
         companyId: currentUser.companyId,
+        isActive: true,
       },
       include: {
         transactions: true,
@@ -188,24 +191,63 @@ export class EquipmentService {
     createTransactionDto: CreateTransactionDto,
   ) {
     const equipment = await this.findOne(currentUser, createTransactionDto.equipmentId);
+    const type = createTransactionDto.transactionType.toUpperCase();
+    const quantity = createTransactionDto.quantity;
 
-    const transaction = await this.prisma.equipmentTransaction.create({
-      data: {
-        equipmentId: createTransactionDto.equipmentId,
-        transactionType: createTransactionDto.transactionType,
-        quantity: createTransactionDto.quantity,
-        fromLocation: createTransactionDto.fromLocation,
-        toLocation: createTransactionDto.toLocation,
-        notes: createTransactionDto.notes,
-        reference: createTransactionDto.reference,
-        createdBy: currentUser.id,
-      },
+    return this.prisma.$transaction(async (tx) => {
+      // 1. Create the transaction record
+      const transaction = await tx.equipmentTransaction.create({
+        data: {
+          equipmentId: createTransactionDto.equipmentId,
+          transactionType: createTransactionDto.transactionType,
+          quantity: createTransactionDto.quantity,
+          fromLocation: createTransactionDto.fromLocation,
+          toLocation: createTransactionDto.toLocation,
+          notes: createTransactionDto.notes,
+          reference: createTransactionDto.reference,
+          createdBy: currentUser.id,
+        },
+      });
+
+      // 2. Update equipment quantities based on transaction type
+      let updateData: any = {};
+
+      if (type === 'IN') {
+        updateData = {
+          quantity: { increment: quantity },
+          availableQuantity: { increment: quantity },
+          isActive: true,
+        };
+      } else if (type === 'RETURN') {
+        updateData = {
+          availableQuantity: { increment: quantity },
+          isActive: true,
+        };
+      } else if (type === 'OUT' || type === 'HANDOVER' || type === 'MAINTENANCE' || type === 'REPAIR') {
+        updateData = {
+          availableQuantity: { decrement: quantity },
+        };
+      }
+
+      if (Object.keys(updateData).length > 0) {
+        const updatedEquipment = await tx.equipment.update({
+          where: { id: equipment.id },
+          data: updateData,
+        });
+
+        // 3. Handle handover "deletion" (hiding from active lists)
+        if (type === 'HANDOVER' && updatedEquipment.availableQuantity <= 0) {
+          await tx.equipment.update({
+            where: { id: equipment.id },
+            data: { isActive: false },
+          });
+          this.logger.log(`Equipment marked as inactive after full handover: ${equipment.name}`);
+        }
+      }
+
+      this.logger.log(`Transaction recorded for equipment: ${equipment.name}`);
+      return transaction;
     });
-
-    this.logger.log(
-      `Transaction recorded for equipment: ${equipment.name}`,
-    );
-    return transaction;
   }
 
   async getTransactionHistory(
