@@ -23,10 +23,10 @@ const AddEquipmentPage: React.FC = () => {
   const [formData, setFormData] = useState<AddEquipmentFormData>({
     equipmentName: '',
     equipmentCategory: '',
-    quantity: 0,
+    quantity: 1,
     lowStockThreshold: 5,
     sendingEntity: '',
-    date: '',
+    date: new Date().toISOString().split('T')[0],
     notes: '',
     recipientUser: '', // Initialize new field
   });
@@ -116,38 +116,39 @@ const AddEquipmentPage: React.FC = () => {
   };
 
   return (
-    <Layout title={t('addEquipment')}>
+    <Layout title="استلام تجهيزات جديدة">
       <div className="space-y-6">
         {/* Header with Back Button */}
-        <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">{t('addEquipment')}</h2>
+        <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow">
+          <h2 className="text-2xl font-bold text-gray-900">استلام تجهيزات (توريد للمخزن)</h2>
           <button
             onClick={() => navigate('/equipment')}
-            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition flex items-center gap-2"
           >
-            ← {t('back')}
+            <span>→</span> {t('back')}
           </button>
         </div>
 
         {/* Success Message */}
         {success && operationNumber && (
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-4 rounded">
-            <p className="font-bold">{t('equipmentRegistered')}</p>
-            <p>
-              {t('operationNumber')}: <span className="font-mono">{operationNumber}</span>
+          <div className="bg-green-100 border-r-4 border-green-500 text-green-700 px-4 py-4 rounded shadow">
+            <p className="font-bold text-lg">تم تسجيل عملية الاستلام بنجاح</p>
+            <p className="text-sm">
+              رقم إيصال الاستلام: <span className="font-mono font-bold bg-green-200 px-2 py-1 rounded">{operationNumber}</span>
             </p>
           </div>
         )}
 
         {/* Error Message */}
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-4 rounded">
+          <div className="bg-red-100 border-r-4 border-red-500 text-red-700 px-4 py-4 rounded shadow">
             {error}
           </div>
         )}
 
         {/* Form Section */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow p-6 border-t-4 border-blue-600">
+          <h3 className="text-lg font-bold text-gray-800 mb-6 border-b pb-2">بيانات الفاتورة / التوريد</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Equipment Name with Search Dropdown */}
             <div>
@@ -300,19 +301,19 @@ const AddEquipmentPage: React.FC = () => {
           </div>
 
           {/* Register Button */}
-          <div className="mt-6 flex gap-3 justify-end">
+            <div className="mt-8 flex gap-4 justify-end border-t pt-6">
             <button
               onClick={() => navigate('/equipment')}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+              className="px-8 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
             >
-              {t('cancel')}
+              إلغاء العملية
             </button>
             <button
               onClick={handleRegister}
               disabled={registering}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+              className="px-10 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-lg shadow-blue-200 transition disabled:opacity-50 font-bold text-lg"
             >
-              {registering ? t('registering') : t('registerEquipment')}
+              {registering ? 'جاري التسجيل...' : 'تأكيد الاستلام وحفظ البيانات'}
             </button>
           </div>
         </div>

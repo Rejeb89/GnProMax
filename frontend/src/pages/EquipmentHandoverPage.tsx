@@ -201,29 +201,29 @@ const EquipmentHandoverPage: React.FC = () => {
   }
 
   return (
-    <Layout title="تسليم التجهيزات">
+    <Layout title="توزيع التجهيزات">
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">تسليم التجهيزات</h1>
+        <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow">
+          <h1 className="text-2xl font-bold text-gray-900">توزيع التجهيزات (تسليم للموظفين/الجهات)</h1>
           <button
             onClick={handleBack}
-            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition flex items-center gap-2"
           >
-            ← العودة
+            <span>→</span> {t('back')}
           </button>
         </div>
 
         {/* Error Display */}
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <div className="bg-red-100 border-r-4 border-red-500 text-red-700 px-4 py-4 rounded shadow">
             {error}
           </div>
         )}
 
         {/* Handover Form */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-6">معلومات التسليم</h2>
+        <div className="bg-white rounded-lg shadow p-6 border-t-4 border-orange-500">
+          <h2 className="text-xl font-bold text-gray-800 mb-6 border-b pb-2">بيانات أمر التوزيع / التسليم</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Equipment Search */}
@@ -354,13 +354,13 @@ const EquipmentHandoverPage: React.FC = () => {
           </div>
 
           {/* Submit Button */}
-          <div className="mt-6 flex justify-end">
+          <div className="mt-8 flex justify-end border-t pt-6">
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-10 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 shadow-lg shadow-orange-200 transition disabled:opacity-50 disabled:cursor-not-allowed font-bold text-lg"
             >
-              {submitting ? 'جاري التسليم...' : 'تسليم'}
+              {submitting ? 'جاري تسجيل التوزيع...' : 'تأكيد التوزيع والتسليم'}
             </button>
           </div>
         </div>
