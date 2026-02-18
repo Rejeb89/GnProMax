@@ -47,7 +47,9 @@ function SettingsPage() {
   const [userError, setUserError] = useState<string | null>(null);
 
   // Check if current user is admin
-  const isAdmin = (user?.role || '').toLowerCase() === 'admin';
+  const isAdmin = user?.role === 'admin' || 
+                 user?.role === 'Admin' ||
+                 (typeof user?.role === 'object' && user?.role.name?.toLowerCase() === 'admin');
   
   // Only log once when user changes
   useEffect(() => {
@@ -221,13 +223,16 @@ function SettingsPage() {
     }
   };
 
-  const getRoleDisplay = (role?: string) => {
+  const getRoleDisplay = (role?: string | { name: string }) => {
     if (!role) return 'غير محدد';
-    switch (role) {
+    
+    const roleName = typeof role === 'string' ? role : role.name;
+    
+    switch (roleName.toLowerCase()) {
       case 'admin': return 'مدير النظام';
       case 'manager': return 'مدير';
-      case 'user': return 'مستخدم عادي';
-      default: return role;
+      case 'user': return 'مستخدم';
+      default: return roleName;
     }
   };
 

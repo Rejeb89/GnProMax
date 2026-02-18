@@ -14,7 +14,7 @@ export interface User {
   lastName?: string;
   companyId: string;
   roleId: string;
-  role?: string;
+  role?: string | { name: string };
   isActive?: boolean;
   branches?: UserBranch[];
 }

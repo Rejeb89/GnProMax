@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { authService } from '@/api/auth';
 import useAuthStore from '@/store/authStore';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Shield, Mail, Lock, UserPlus } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -36,67 +42,79 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-500 to-blue-600">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-500 to-blue-600 p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          <div className="flex justify-between items-center mb-2">
-            <h1 className="text-3xl font-bold text-gray-900 flex-1 text-center">نظام إدارة الوحدات الجهوية للحرس الوطني</h1>
-          </div>
-          <p className="text-center text-gray-600 mb-8">تخطيط موارد المؤسسة</p>
+        <Card className="shadow-lg">
+          <CardHeader className="text-center p-4 sm:p-6">
+            <CardTitle className="flex items-center justify-center gap-2 text-xl sm:text-3xl font-bold text-gray-900">
+              <Shield className="h-6 w-6 sm:h-8 sm:w-8" />
+              <span className="hidden sm:inline">نظام إدارة الوحدات الجهوية للحرس الوطني</span>
+              <span className="sm:hidden">نظام إدارة الحرس</span>
+            </CardTitle>
+            <p className="text-muted-foreground mt-2 text-sm sm:text-base">تخطيط موارد المؤسسة</p>
+          </CardHeader>
+          <CardContent className="p-4 sm:p-6">
+            {error && (
+              <Alert className="mb-4" variant="destructive">
+                <AlertDescription className="text-sm">{error}</AlertDescription>
+              </Alert>
+            )}
 
-          {error && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded">
-              {error}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm">{t('email')}</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder={t('email')}
+                    required
+                    className="text-right pl-10 text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm">{t('password')}</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder={t('password')}
+                    required
+                    className="text-right pl-10 text-sm"
+                  />
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full text-sm"
+              >
+                {loading ? t('saving') : t('loginButton')}
+              </Button>
+            </form>
+
+            <div className="text-center mt-6">
+              <p className="text-muted-foreground text-sm">
+                ليس لديك حساب؟{' '}
+                <Link to="/register" className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1 justify-center">
+                  <UserPlus className="h-4 w-4" />
+                  {t('registerButton')}
+                </Link>
+              </p>
             </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t('email')}
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
-                placeholder={t('email')}
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                {t('password')}
-              </label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
-                placeholder={t('password')}
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
-            >
-              {loading ? t('saving') : t('loginButton')}
-            </button>
-          </form>
-
-          <p className="text-center text-gray-600 mt-6">
-            ليس لديك حساب؟{' '}
-            <a href="/register" className="text-blue-600 hover:text-blue-700 font-medium">
-              {t('registerButton')}
-            </a>
-          </p>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

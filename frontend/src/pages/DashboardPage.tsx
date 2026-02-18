@@ -4,6 +4,12 @@ import { dashboardService } from '@/api/dashboard';
 import { equipmentService } from '@/api/equipment';
 import { DashboardStats } from '@/types';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Progress } from '@/components/ui/progress';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Users, Car, Wrench, DollarSign, Package, TrendingDown, AlertTriangle, Activity } from 'lucide-react';
 
 interface LowStockItem {
   id: string;
@@ -21,6 +27,7 @@ const DashboardPage: React.FC = () => {
     totalVehicles: 0,
     totalEquipment: 0,
     totalExpenses: 0,
+    totalRevenues: 0,
   });
   const [lowStockItems, setLowStockItems] = useState<LowStockItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,86 +62,119 @@ const DashboardPage: React.FC = () => {
     }
   };
 
-  const StatCard: React.FC<{ title: string; value: number; icon: string }> = ({
+  const StatCard: React.FC<{ title: string; value: number; icon: React.ReactNode; description?: string }> = ({
     title,
     value,
     icon,
+    description,
   }) => (
-    <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-gray-600 text-sm font-medium">{title}</p>
-          <p className="text-3xl font-bold text-gray-900 mt-2">{value}</p>
+    <Card>
+      <CardContent className="p-4 sm:p-6">
+        <div className="flex items-center justify-between">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs sm:text-sm font-medium text-muted-foreground">{title}</p>
+            <p className="text-xl sm:text-3xl font-bold mt-1 sm:mt-2 truncate">{value}</p>
+            {description && (
+              <p className="text-xs text-muted-foreground mt-1 hidden sm:block">{description}</p>
+            )}
+          </div>
+          <div className="text-3xl sm:text-4xl text-muted-foreground flex-shrink-0 mr-2 sm:mr-4">{icon}</div>
         </div>
-        <div className="text-4xl text-blue-500">{icon}</div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 
   return (
     <Layout title={t('dashboard')}>
-      {loading ? (
-        <div className="flex items-center justify-center h-64">
-          <div className="text-gray-600">{t('loading')}</div>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard title={t('totalEmployees')} value={stats.totalEmployees} icon="👥" />
-          <StatCard title={t('totalVehicles')} value={stats.totalVehicles} icon="🚗" />
-          <StatCard title={t('totalEquipment')} value={stats.totalEquipment} icon="🔧" />
-          <StatCard title={t('totalExpenses')} value={stats.totalExpenses} icon="💸" />
-        </div>
-      )}
-
-      {/* Recent Activity */}
-      <div className="mt-8 bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">النشاط الأخير</h3>
-        <div className="text-gray-600 text-center py-12">
-          <p>{t('noData')}</p>
-        </div>
-      </div>
-
-      {/* Low Stock Items */}
-      <div className="mt-8 bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('lowStockItems')}</h3>
-        {lowStockLoading ? (
-          <div className="text-center text-gray-600 py-8">{t('loading')}</div>
-        ) : lowStockItems.length === 0 ? (
-          <div className="text-center text-gray-600 py-8">{t('noData')}</div>
+      <div className="space-y-4 sm:space-y-6">
+        {loading ? (
+          <div className="flex items-center justify-center h-64">
+            <div className="text-muted-foreground">{t('loading')}</div>
+          </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="px-6 py-3 text-right text-sm font-medium text-gray-700">{t('name')}</th>
-                  <th className="px-6 py-3 text-right text-sm font-medium text-gray-700">{t('category')}</th>
-                  <th className="px-6 py-3 text-right text-sm font-medium text-gray-700">{t('currentStock')}</th>
-                  <th className="px-6 py-3 text-right text-sm font-medium text-gray-700">{t('threshold')}</th>
-                  <th className="px-6 py-3 text-right text-sm font-medium text-gray-700">حالة المخزون</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {lowStockItems.map((item) => (
-                  <tr key={item.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-3 text-sm text-gray-900 text-right">{item.name}</td>
-                    <td className="px-6 py-3 text-sm text-gray-600 text-right">{item.category}</td>
-                    <td className="px-6 py-3 text-sm text-gray-600 text-right">
-                      <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-xs font-medium">
-                        {item.quantity}
-                      </span>
-                    </td>
-                    <td className="px-6 py-3 text-sm text-gray-600 text-right">{item.lowStockThreshold}</td>
-                    <td className="px-6 py-3 text-sm text-right">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                        ⚠️ {t('lowStock')}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            <StatCard title={t('totalEmployees')} value={stats.totalEmployees} icon={<Users className="h-6 w-6 sm:h-8 sm:w-8" />} description="الموظفين النشطين" />
+            <StatCard title={t('totalVehicles')} value={stats.totalVehicles} icon={<Car className="h-6 w-6 sm:h-8 sm:w-8" />} description="المركبات المتاحة" />
+            <StatCard title={t('totalEquipment')} value={stats.totalEquipment} icon={<Wrench className="h-6 w-6 sm:h-8 sm:w-8" />} description="عدد المعدات" />
+            <StatCard title={t('totalExpenses')} value={stats.totalExpenses} icon={<DollarSign className="h-6 w-6 sm:h-8 sm:w-8" />} description="إجمالي المصروفات" />
           </div>
         )}
+
+        {/* Recent Activity */}
+        <Card className="mt-6 sm:mt-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              <Activity className="h-4 w-4 sm:h-5 sm:w-5" />
+              النشاط الأخير
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-muted-foreground text-center py-8 sm:py-12">
+              <p className="text-sm sm:text-base">{t('noData')}</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Low Stock Items */}
+        <Card className="mt-6 sm:mt-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              <Package className="h-4 w-4 sm:h-5 sm:w-5" />
+              {t('lowStockItems')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {lowStockLoading ? (
+              <div className="text-center text-muted-foreground py-6 sm:py-8">
+                <p className="text-sm sm:text-base">{t('loading')}</p>
+              </div>
+            ) : lowStockItems.length === 0 ? (
+              <Alert>
+                <AlertDescription className="text-sm sm:text-base">
+                  لا توجد مواد منخفضة المخزون حالياً
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-right text-xs sm:text-sm">{t('name')}</TableHead>
+                      <TableHead className="text-right text-xs sm:text-sm">{t('category')}</TableHead>
+                      <TableHead className="text-right text-xs sm:text-sm">{t('currentStock')}</TableHead>
+                      <TableHead className="text-right text-xs sm:text-sm">{t('threshold')}</TableHead>
+                      <TableHead className="text-right text-xs sm:text-sm">حالة المخزون</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {lowStockItems.map((item) => {
+                      const stockPercentage = (item.quantity / item.lowStockThreshold) * 100;
+                      return (
+                        <TableRow key={item.id}>
+                          <TableCell className="font-medium text-xs sm:text-sm">{item.name}</TableCell>
+                          <TableCell className="text-xs sm:text-sm">{item.category}</TableCell>
+                          <TableCell>
+                            <Badge variant="destructive" className="text-xs">{item.quantity}</Badge>
+                          </TableCell>
+                          <TableCell className="text-xs sm:text-sm">{item.lowStockThreshold}</TableCell>
+                          <TableCell>
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                              <Progress value={Math.min(stockPercentage, 100)} className="w-16 sm:w-20 h-2" />
+                              <Badge variant="destructive" className="text-xs">
+                                <AlertTriangle className="h-3 w-3 mr-1" />
+                                {t('lowStock')}
+                              </Badge>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </Layout>
   );

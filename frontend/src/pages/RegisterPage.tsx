@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { authService } from '@/api/auth';
 import useAuthStore from '@/store/authStore';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Shield, Mail, Lock, User, Building, LogIn } from 'lucide-react';
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
@@ -43,92 +49,143 @@ const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-500 to-blue-600">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-500 to-blue-600 p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-lg shadow-lg p-8">
-          <div className="flex justify-between items-center mb-2">
-            <h1 className="text-3xl font-bold text-gray-900 flex-1 text-center">نظام إدارة الوحدات الجهوية للحرس الوطني</h1>
-          </div>
-          <p className="text-center text-gray-600 mb-8">{t('registerYourCompany')}</p>
+        <Card className="shadow-lg">
+          <CardHeader className="text-center p-4 sm:p-6">
+            <CardTitle className="flex items-center justify-center gap-2 text-xl sm:text-3xl font-bold text-gray-900">
+              <Shield className="h-6 w-6 sm:h-8 sm:w-8" />
+              <span className="hidden sm:inline">نظام إدارة الوحدات الجهوية للحرس الوطني</span>
+              <span className="sm:hidden">نظام إدارة الحرس</span>
+            </CardTitle>
+            <p className="text-muted-foreground mt-2 text-sm sm:text-base">{t('registerYourCompany')}</p>
+          </CardHeader>
+          <CardContent className="p-4 sm:p-6">
+            {error && (
+              <Alert className="mb-4" variant="destructive">
+                <AlertDescription className="text-sm">{error}</AlertDescription>
+              </Alert>
+            )}
 
-          {error && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded">
-              {error}
+            <form onSubmit={handleSubmit} className="space-y-3">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm">{t('email')}</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    name="email"
+                    placeholder={t('email')}
+                    value={formData.email}
+                    onChange={handleChange}
+                    className="text-right pl-10 text-sm"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="username" className="text-sm">{t('username')}</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="username"
+                    type="text"
+                    name="username"
+                    placeholder={t('username')}
+                    value={formData.username}
+                    onChange={handleChange}
+                    className="text-right pl-10 text-sm"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm">{t('password')}</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type="password"
+                    name="password"
+                    placeholder={t('password')}
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="text-right pl-10 text-sm"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName" className="text-sm">{t('firstName')}</Label>
+                  <Input
+                    id="firstName"
+                    type="text"
+                    name="firstName"
+                    placeholder={t('firstName')}
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    className="text-sm"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="lastName" className="text-sm">{t('lastName')}</Label>
+                  <Input
+                    id="lastName"
+                    type="text"
+                    name="lastName"
+                    placeholder={t('lastName')}
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    className="text-sm"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="companyName" className="text-sm">{t('companyName')}</Label>
+                <div className="relative">
+                  <Building className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="companyName"
+                    type="text"
+                    name="companyName"
+                    placeholder={t('companyName')}
+                    value={formData.companyName}
+                    onChange={handleChange}
+                    className="text-right pl-10 text-sm"
+                    required
+                  />
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full mt-4 text-sm"
+              >
+                {loading ? t('registering') : t('registerButton')}
+              </Button>
+            </form>
+
+            <div className="text-center mt-6">
+              <p className="text-muted-foreground text-sm">
+                {t('alreadyHaveAccount')}{' '}
+                <Link to="/login" className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1 justify-center">
+                  <LogIn className="h-4 w-4" />
+                  {t('loginButton')}
+                </Link>
+              </p>
             </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <input
-              type="email"
-              name="email"
-              placeholder={t('email')}
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-right"
-              required
-            />
-            <input
-              type="text"
-              name="username"
-              placeholder={t('username')}
-              value={formData.username}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-right"
-              required
-            />
-            <input
-              type="password"
-              name="password"
-              placeholder={t('password')}
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-right"
-              required
-            />
-            <input
-              type="text"
-              name="firstName"
-              placeholder={t('firstName')}
-              value={formData.firstName}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-right"
-              required
-            />
-            <input
-              type="text"
-              name="lastName"
-              placeholder={t('lastName')}
-              value={formData.lastName}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-right"
-              required
-            />
-            <input
-              type="text"
-              name="companyName"
-              placeholder={t('companyName')}
-              value={formData.companyName}
-              onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-right"
-              required
-            />
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 mt-4"
-            >
-              {loading ? t('registering') : t('registerButton')}
-            </button>
-          </form>
-
-          <p className="text-center text-gray-600 mt-6">
-            {t('alreadyHaveAccount')}{' '}
-            <a href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
-              {t('loginButton')}
-            </a>
-          </p>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

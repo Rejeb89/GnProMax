@@ -4,6 +4,16 @@ import Layout from '@/components/Layout';
 import usersService from '@/api/users';
 import useAuthStore from '@/store/authStore';
 import { User, Branch } from '@/types';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Plus, Edit, Trash2, Users, Building } from 'lucide-react';
 
 interface NewUser {
   email: string;
@@ -22,6 +32,8 @@ function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [showEditUserModal, setShowEditUserModal] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
   const [newUser, setNewUser] = useState<NewUser>({
     email: '',
     username: '',
@@ -35,7 +47,9 @@ function UsersPage() {
   const [error, setError] = useState<string | null>(null);
 
   // Check if current user is admin
-  const isAdmin = (user?.role || '').toLowerCase() === 'admin';
+  const isAdmin = user?.role === 'admin' || 
+                 user?.role === 'Admin' ||
+                 (typeof user?.role === 'object' && user?.role.name?.toLowerCase() === 'admin');
 
   useEffect(() => {
     loadUsers();
@@ -126,6 +140,53 @@ function UsersPage() {
     }
   };
 
+  const handleEditUser = (user: User) => {
+    setEditingUser(user);
+    setNewUser({
+      email: user.email,
+      username: user.username,
+      password: '',
+      firstName: user.firstName || '',
+      lastName: user.lastName || '',
+      role: typeof user.role === 'string' ? user.role as 'admin' | 'manager' | 'user' : 
+            (user.role as any)?.name?.toLowerCase() || 'user',
+      branchIds: user.branches?.map(ub => ub.branchId) || []
+    });
+    setShowEditUserModal(true);
+  };
+
+  const handleUpdateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+    
+    try {
+      setLoading(true);
+      await usersService.update(editingUser.id, {
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        role: newUser.role,
+        branchIds: newUser.branchIds,
+      });
+      setShowEditUserModal(false);
+      setEditingUser(null);
+      setNewUser({
+        email: '',
+        username: '',
+        password: '',
+        firstName: '',
+        lastName: '',
+        role: 'user',
+        branchIds: []
+      });
+      loadUsers();
+      setError(null);
+    } catch (err: any) {
+      setError(err.message || 'فشل في تحديث المستخدم');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleBranchToggle = (branchId: string) => {
     setNewUser(prev => ({
       ...prev,
@@ -142,17 +203,15 @@ function UsersPage() {
 
   return (
     <Layout title="إدارة المستخدمين">
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900">إدارة المستخدمين</h1>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">إدارة المستخدمين</h1>
           {isAdmin && (
-            <button
-              onClick={() => setShowAddUserModal(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-            >
+            <Button onClick={() => setShowAddUserModal(true)} className="w-full sm:w-auto">
+              <Plus className="mr-2 h-4 w-4" />
               إضافة مستخدم جديد
-            </button>
+            </Button>
           )}
         </div>
 
@@ -164,215 +223,348 @@ function UsersPage() {
         )}
 
         {/* Users List */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-xl font-semibold text-gray-900">قائمة المستخدمين</h2>
-          </div>
-          
-          {loading ? (
-            <div className="p-6 text-center text-gray-500">جاري التحميل...</div>
-          ) : users.length === 0 ? (
-            <div className="p-6 text-center text-gray-500">لا يوجد مستخدمون</div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      الاسم
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      البريد الإلكتروني
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      اسم المستخدم
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      الدور
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      الفروع
-                    </th>
-                    {isAdmin && (
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        الإجراءات
-                      </th>
-                    )}
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {users.map((user) => (
-                    <tr key={user.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {user.firstName} {user.lastName}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {user.email}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {user.username}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          user.role === 'admin' ? 'bg-red-100 text-red-800' :
-                          user.role === 'manager' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-green-100 text-green-800'
-                        }`}>
-                          {user.role === 'admin' ? 'مدير' :
-                           user.role === 'manager' ? 'مدير فرعي' : 'مستخدم'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {user.branches?.map(userBranch => userBranch.branch?.name).filter(Boolean).join(', ') || '-'}
-                      </td>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              <Users className="h-5 w-5" />
+              <span className="truncate">قائمة المستخدمين</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="p-6 text-center text-gray-500">جاري التحميل...</div>
+            ) : users.length === 0 ? (
+              <div className="p-6 text-center text-gray-500">لا يوجد مستخدمون</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-right text-xs sm:text-sm whitespace-nowrap">الاسم</TableHead>
+                      <TableHead className="text-right text-xs sm:text-sm whitespace-nowrap">البريد الإلكتروني</TableHead>
+                      <TableHead className="text-right text-xs sm:text-sm whitespace-nowrap">اسم المستخدم</TableHead>
+                      <TableHead className="text-right text-xs sm:text-sm whitespace-nowrap">الدور</TableHead>
+                      <TableHead className="text-right text-xs sm:text-sm whitespace-nowrap">الفروع</TableHead>
                       {isAdmin && (
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          <button
-                            onClick={() => handleDeleteUser(user.id)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            حذف
-                          </button>
-                        </td>
+                        <TableHead className="text-right text-xs sm:text-sm whitespace-nowrap">الإجراءات</TableHead>
                       )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {users.map((user) => (
+                      <TableRow key={user.id}>
+                        <TableCell className="font-medium text-xs sm:text-sm">
+                          <span className="block sm:hidden">{user.firstName} {user.lastName}</span>
+                          <span className="hidden sm:block">{user.firstName} {user.lastName}</span>
+                        </TableCell>
+                        <TableCell className="text-xs sm:text-sm">
+                          <span className="block truncate max-w-[120px] sm:max-w-none">{user.email}</span>
+                        </TableCell>
+                        <TableCell className="text-xs sm:text-sm">{user.username}</TableCell>
+                        <TableCell>
+                          <Badge variant={
+                            (typeof user.role === 'string' ? user.role : (user.role as any)?.name) === 'admin' ? 'destructive' :
+                            (typeof user.role === 'string' ? user.role : (user.role as any)?.name) === 'manager' ? 'secondary' :
+                            'default'
+                          } className="text-xs">
+                            {(typeof user.role === 'string' ? user.role : (user.role as any)?.name) === 'admin' ? 'مدير' :
+                             (typeof user.role === 'string' ? user.role : (user.role as any)?.name) === 'manager' ? 'مدير فرعي' : 'مستخدم'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-xs sm:text-sm">
+                          <span className="block truncate max-w-[100px] sm:max-w-none">
+                            {user.branches?.map(userBranch => userBranch.branch?.name).filter(Boolean).join(', ') || '-'}
+                          </span>
+                        </TableCell>
+                        {isAdmin && (
+                          <TableCell>
+                            <div className="flex flex-col sm:flex-row gap-1 sm:gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleEditUser(user)}
+                                className="text-xs h-8 px-2"
+                              >
+                                <Edit className="h-3 w-3" />
+                                <span className="hidden sm:inline mr-1">تعديل</span>
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleDeleteUser(user.id)}
+                                className="text-xs h-8 px-2"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                                <span className="hidden sm:inline mr-1">حذف</span>
+                              </Button>
+                            </div>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Add User Modal */}
-        {showAddUserModal && isAdmin && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-lg bg-white">
-              <div className="mt-3">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">إضافة مستخدم جديد</h3>
-                
-                <form onSubmit={handleAddUser} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      الاسم الأول
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={newUser.firstName}
-                      onChange={(e) => setNewUser({...newUser, firstName: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
+        <Dialog open={showAddUserModal && isAdmin} onOpenChange={setShowAddUserModal}>
+          <DialogContent className="sm:max-w-md max-w-[95vw]">
+            <DialogHeader>
+              <DialogTitle className="text-lg sm:text-xl">إضافة مستخدم جديد</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleAddUser} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName" className="text-sm">الاسم الأول</Label>
+                  <Input
+                    id="firstName"
+                    type="text"
+                    required
+                    value={newUser.firstName}
+                    onChange={(e) => setNewUser({...newUser, firstName: e.target.value})}
+                    className="text-sm"
+                  />
+                </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      الاسم الأخير
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={newUser.lastName}
-                      onChange={(e) => setNewUser({...newUser, lastName: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      البريد الإلكتروني
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      value={newUser.email}
-                      onChange={(e) => setNewUser({...newUser, email: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      اسم المستخدم
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={newUser.username}
-                      onChange={(e) => setNewUser({...newUser, username: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      كلمة المرور
-                    </label>
-                    <input
-                      type="password"
-                      required
-                      value={newUser.password}
-                      onChange={(e) => setNewUser({...newUser, password: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      الدور
-                    </label>
-                    <select
-                      value={newUser.role}
-                      onChange={(e) => setNewUser({...newUser, role: e.target.value as 'admin' | 'manager' | 'user'})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                    >
-                      <option value="user">مستخدم</option>
-                      <option value="manager">مدير فرعي</option>
-                      <option value="admin">مدير</option>
-                    </select>
-                  </div>
-
-                  {branches.length > 0 && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        الفروع
-                      </label>
-                      <div className="space-y-2 max-h-32 overflow-y-auto">
-                        {branches.map((branch) => (
-                          <label key={branch.id} className="flex items-center">
-                            <input
-                              type="checkbox"
-                              checked={newUser.branchIds?.includes(branch.id) || false}
-                              onChange={() => handleBranchToggle(branch.id)}
-                              className="ml-2"
-                            />
-                            <span className="text-sm">{branch.name}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex justify-end space-x-2 space-x-reverse">
-                    <button
-                      type="button"
-                      onClick={() => setShowAddUserModal(false)}
-                      className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-                    >
-                      إلغاء
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-                    >
-                      {loading ? 'جاري الإنشاء...' : 'إنشاء'}
-                    </button>
-                  </div>
-                </form>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName" className="text-sm">الاسم الأخير</Label>
+                  <Input
+                    id="lastName"
+                    type="text"
+                    required
+                    value={newUser.lastName}
+                    onChange={(e) => setNewUser({...newUser, lastName: e.target.value})}
+                    className="text-sm"
+                  />
+                </div>
               </div>
-            </div>
-          </div>
-        )}
+
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm">البريد الإلكتروني</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  required
+                  value={newUser.email}
+                  onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+                  className="text-sm"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="username" className="text-sm">اسم المستخدم</Label>
+                <Input
+                  id="username"
+                  type="text"
+                  required
+                  value={newUser.username}
+                  onChange={(e) => setNewUser({...newUser, username: e.target.value})}
+                  className="text-sm"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm">كلمة المرور</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  value={newUser.password}
+                  onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+                  className="text-sm"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="role" className="text-sm">الدور</Label>
+                <Select value={newUser.role} onValueChange={(value: 'admin' | 'manager' | 'user') => setNewUser({...newUser, role: value})}>
+                  <SelectTrigger>
+                    <SelectValue className="text-sm" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="user" className="text-sm">مستخدم</SelectItem>
+                    <SelectItem value="manager" className="text-sm">مدير فرعي</SelectItem>
+                    <SelectItem value="admin" className="text-sm">مدير</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {branches.length > 0 && (
+                <div>
+                  <Label className="mb-2 block text-sm">الفروع</Label>
+                  <div className="space-y-2 max-h-32 overflow-y-auto">
+                    {branches.map((branch) => (
+                      <div key={branch.id} className="flex items-center space-x-2 space-x-reverse">
+                        <Checkbox
+                          id={`branch-${branch.id}`}
+                          checked={newUser.branchIds?.includes(branch.id) || false}
+                          onCheckedChange={() => handleBranchToggle(branch.id)}
+                        />
+                        <Label htmlFor={`branch-${branch.id}`} className="text-sm flex items-center gap-2">
+                          <Building className="h-3 w-3" />
+                          <span className="truncate">{branch.name}</span>
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <DialogFooter className="flex-col sm:flex-row gap-2">
+                <Button type="button" variant="outline" onClick={() => setShowAddUserModal(false)} className="w-full sm:w-auto">
+                  إلغاء
+                </Button>
+                <Button type="submit" disabled={loading} className="w-full sm:w-auto">
+                  {loading ? 'جاري الإنشاء...' : 'إنشاء'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit User Modal */}
+        <Dialog open={showEditUserModal && isAdmin && !!editingUser} onOpenChange={(open) => {
+          if (!open) {
+            setShowEditUserModal(false);
+            setEditingUser(null);
+            setNewUser({
+              email: '',
+              username: '',
+              password: '',
+              firstName: '',
+              lastName: '',
+              role: 'user',
+              branchIds: []
+            });
+          }
+        }}>
+          <DialogContent className="sm:max-w-md max-w-[95vw]">
+            <DialogHeader>
+              <DialogTitle className="text-lg sm:text-xl">تعديل مستخدم</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleUpdateUser} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-firstName" className="text-sm">الاسم الأول</Label>
+                  <Input
+                    id="edit-firstName"
+                    type="text"
+                    required
+                    value={newUser.firstName}
+                    onChange={(e) => setNewUser({...newUser, firstName: e.target.value})}
+                    className="text-sm"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-lastName" className="text-sm">الاسم الأخير</Label>
+                  <Input
+                    id="edit-lastName"
+                    type="text"
+                    required
+                    value={newUser.lastName}
+                    onChange={(e) => setNewUser({...newUser, lastName: e.target.value})}
+                    className="text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-email" className="text-sm">البريد الإلكتروني</Label>
+                <Input
+                  id="edit-email"
+                  type="email"
+                  required
+                  value={newUser.email}
+                  disabled
+                  className="bg-gray-100 text-sm"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-username" className="text-sm">اسم المستخدم</Label>
+                <Input
+                  id="edit-username"
+                  type="text"
+                  required
+                  value={newUser.username}
+                  disabled
+                  className="bg-gray-100 text-sm"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-password" className="text-sm">كلمة المرور (اتركها فارغة للحفاظ على الحالية)</Label>
+                <Input
+                  id="edit-password"
+                  type="password"
+                  value={newUser.password}
+                  onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+                  className="text-sm"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-role" className="text-sm">الدور</Label>
+                <Select value={newUser.role} onValueChange={(value: 'admin' | 'manager' | 'user') => setNewUser({...newUser, role: value})}>
+                  <SelectTrigger>
+                    <SelectValue className="text-sm" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="user" className="text-sm">مستخدم</SelectItem>
+                    <SelectItem value="manager" className="text-sm">مدير فرعي</SelectItem>
+                    <SelectItem value="admin" className="text-sm">مدير</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {branches.length > 0 && (
+                <div>
+                  <Label className="mb-2 block text-sm">الفروع</Label>
+                  <div className="space-y-2 max-h-32 overflow-y-auto">
+                    {branches.map((branch) => (
+                      <div key={branch.id} className="flex items-center space-x-2 space-x-reverse">
+                        <Checkbox
+                          id={`edit-branch-${branch.id}`}
+                          checked={newUser.branchIds?.includes(branch.id) || false}
+                          onCheckedChange={() => handleBranchToggle(branch.id)}
+                        />
+                        <Label htmlFor={`edit-branch-${branch.id}`} className="text-sm flex items-center gap-2">
+                          <Building className="h-3 w-3" />
+                          <span className="truncate">{branch.name}</span>
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <DialogFooter className="flex-col sm:flex-row gap-2">
+                <Button type="button" variant="outline" onClick={() => {
+                  setShowEditUserModal(false);
+                  setEditingUser(null);
+                  setNewUser({
+                    email: '',
+                    username: '',
+                    password: '',
+                    firstName: '',
+                    lastName: '',
+                    role: 'user',
+                    branchIds: []
+                  });
+                }} className="w-full sm:w-auto">
+                  إلغاء
+                </Button>
+                <Button type="submit" disabled={loading} className="w-full sm:w-auto">
+                  {loading ? 'جاري التحديث...' : 'تحديث'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
     </Layout>
   );
