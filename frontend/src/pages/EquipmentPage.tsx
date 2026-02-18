@@ -24,9 +24,16 @@ const EquipmentPage: React.FC = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [equipment, setEquipment] = useState<Equipment[]>([]);
+  const [stats, setStats] = useState({
+    totalReceived: 0,
+    availableStock: 0,
+    distributedStock: 0,
+    totalTypes: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [includeInactive, setIncludeInactive] = useState(false);
 
   const filteredEquipment = equipment.filter((item) =>
     item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -34,26 +41,25 @@ const EquipmentPage: React.FC = () => {
     item.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Stats calculation
-  const totalItems = equipment.length;
-  const totalStock = equipment.reduce((acc, item) => acc + (item.quantity || 0), 0);
-  const availableStock = equipment.reduce((acc, item) => acc + (item.availableQuantity || 0), 0);
-  const distributedStock = totalStock - availableStock;
-
   // Fetch equipment on component mount
   const fetchEquipment = useCallback(async () => {
     try {
       console.log('Fetching equipment...');
       setLoading(true);
-      const response = await equipmentService.getAll();
+      const response = await equipmentService.getAll({ includeInactive });
       console.log('Equipment response received:', response);
       
       // Extract array from response object
       const equipmentArray = response?.data || [];
-      console.log('Equipment array extracted:', equipmentArray);
-      console.log('Is array?', Array.isArray(equipmentArray));
+      const backendStats = response?.stats || {
+        totalReceived: 0,
+        availableStock: 0,
+        distributedStock: 0,
+        totalTypes: 0,
+      };
       
       setEquipment(equipmentArray);
+      setStats(backendStats);
       setError(null);
     } catch (err: any) {
       console.error('Failed to fetch equipment:', err);
@@ -67,7 +73,7 @@ const EquipmentPage: React.FC = () => {
 
   useEffect(() => {
     fetchEquipment();
-  }, [fetchEquipment]);
+  }, [fetchEquipment, includeInactive]);
 
   const handleDelete = async (id: string) => {
     if (!confirm('هل أنت متأكد من حذف هذا التجهيز؟')) {
@@ -114,19 +120,19 @@ const EquipmentPage: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-white p-6 rounded-lg shadow border-r-4 border-blue-500">
             <p className="text-sm text-gray-500 font-medium">إجمالي أنواع التجهيزات</p>
-            <p className="text-2xl font-bold text-gray-900">{totalItems}</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.totalTypes}</p>
           </div>
           <div className="bg-white p-6 rounded-lg shadow border-r-4 border-green-500">
             <p className="text-sm text-gray-500 font-medium">إجمالي الكمية المستلمة</p>
-            <p className="text-2xl font-bold text-gray-900">{totalStock}</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.totalReceived}</p>
           </div>
           <div className="bg-white p-6 rounded-lg shadow border-r-4 border-amber-500">
-            <p className="text-sm text-gray-500 font-medium">الكمية المتوفرة حالياً</p>
-            <p className="text-2xl font-bold text-gray-900">{availableStock}</p>
+            <p className="text-sm text-gray-500 font-medium">الرصيد المتوفر بالمخزن</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.availableStock}</p>
           </div>
           <div className="bg-white p-6 rounded-lg shadow border-r-4 border-purple-500">
-            <p className="text-sm text-gray-500 font-medium">الكمية الموزعة</p>
-            <p className="text-2xl font-bold text-gray-900">{distributedStock}</p>
+            <p className="text-sm text-gray-500 font-medium">الكمية الموزعة/المسلمة</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.distributedStock}</p>
           </div>
         </div>
 
@@ -140,6 +146,19 @@ const EquipmentPage: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="includeInactive"
+              checked={includeInactive}
+              onChange={(e) => setIncludeInactive(e.target.checked)}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <label htmlFor="includeInactive" className="text-sm font-medium text-gray-700 cursor-pointer">
+              عرض التجهيزات الموزعة بالكامل
+            </label>
           </div>
 
           <div className="flex gap-3 w-full md:w-auto">
@@ -187,34 +206,38 @@ const EquipmentPage: React.FC = () => {
                   ) : (
                     <div className="overflow-x-auto">
                       <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-100 border-b">
+                        <thead className="bg-gray-100 border-b text-right">
                           <tr>
-                            <th className="px-6 py-4 text-right text-sm font-bold text-gray-700">التجهيز</th>
-                            <th className="px-6 py-4 text-right text-sm font-bold text-gray-700">الصنف</th>
-                            <th className="px-6 py-4 text-right text-sm font-bold text-gray-700">الرقم التسلسلي</th>
-                            <th className="px-6 py-4 text-center text-sm font-bold text-gray-700">الكمية الكلية</th>
-                            <th className="px-6 py-4 text-center text-sm font-bold text-gray-700">المتوفر</th>
-                            <th className="px-6 py-4 text-center text-sm font-bold text-gray-700">الحالة</th>
-                            <th className="px-6 py-4 text-center text-sm font-bold text-gray-700">الإجراءات</th>
+                            <th className="px-4 py-4 text-sm font-bold text-gray-700">التجهيز</th>
+                            <th className="px-4 py-4 text-sm font-bold text-gray-700">الصنف</th>
+                            <th className="px-4 py-4 text-sm font-bold text-gray-700">الرقم التسلسلي</th>
+                            <th className="px-4 py-4 text-center text-sm font-bold text-gray-700 w-24">إجمالي المستلم</th>
+                            <th className="px-4 py-4 text-center text-sm font-bold text-gray-700 w-24">الموزع</th>
+                            <th className="px-4 py-4 text-center text-sm font-bold text-gray-700 w-24">بالمخزن</th>
+                            <th className="px-4 py-4 text-center text-sm font-bold text-gray-700">الحالة</th>
+                            <th className="px-4 py-4 text-center text-sm font-bold text-gray-700">الإجراءات</th>
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
                           {filteredEquipment.map((item) => (
                             <tr key={item.id} className="hover:bg-blue-50 transition">
-                              <td className="px-6 py-4 whitespace-nowrap">
+                              <td className="px-4 py-4 whitespace-nowrap">
                                 <div className="text-sm font-bold text-gray-900">{item.name}</div>
                                 <div className="text-xs text-gray-500">{new Date(item.purchaseDate).toLocaleDateString('ar-SA')}</div>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
                                 {item.category}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600">
+                              <td className="px-4 py-4 whitespace-nowrap text-sm font-mono text-gray-600">
                                 {item.serialNumber}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-bold text-gray-900">
+                              <td className="px-4 py-4 whitespace-nowrap text-center text-sm font-bold text-gray-900">
                                 {item.quantity}
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-bold">
+                              <td className="px-4 py-4 whitespace-nowrap text-center text-sm font-bold text-orange-600">
+                                {item.quantity - item.availableQuantity}
+                              </td>
+                              <td className="px-4 py-4 whitespace-nowrap text-center text-sm font-bold">
                                 <span className={item.availableQuantity <= (item.lowStockThreshold || 0) ? 'text-red-600' : 'text-green-600'}>
                                   {item.availableQuantity}
                                 </span>

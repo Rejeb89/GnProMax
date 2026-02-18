@@ -1,8 +1,8 @@
 import apiClient from './client';
 
 export const equipmentService = {
-  getAll: async () => {
-    const response = await apiClient.get('/equipment');
+  getAll: async (params?: { skip?: number; take?: number; includeInactive?: boolean }) => {
+    const response = await apiClient.get('/equipment', { params });
     return response.data;
   },
 

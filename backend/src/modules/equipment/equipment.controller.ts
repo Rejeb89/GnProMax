@@ -43,11 +43,13 @@ export class EquipmentController {
     @CurrentUser() currentUser: CurrentUser,
     @Query('skip') skip: string = '0',
     @Query('take') take: string = '10',
+    @Query('includeInactive') includeInactive: string = 'false',
   ) {
     return this.equipmentService.findAll(
       currentUser,
       parseInt(skip),
       parseInt(take),
+      includeInactive === 'true',
     );
   }
 

@@ -61,12 +61,17 @@ export class EquipmentService {
     return equipment;
   }
 
-  async findAll(currentUser: CurrentUser, skip: number = 0, take: number = 10) {
+  async findAll(currentUser: CurrentUser, skip: number = 0, take: number = 10, includeInactive: boolean = false) {
+    const where: any = {
+      companyId: currentUser.companyId,
+    };
+
+    if (!includeInactive) {
+      where.isActive = true;
+    }
+
     const equipment = await this.prisma.equipment.findMany({
-      where: {
-        companyId: currentUser.companyId,
-        isActive: true,
-      },
+      where,
       include: {
         transactions: {
           take: 5,
@@ -78,13 +83,35 @@ export class EquipmentService {
       orderBy: { createdAt: 'desc' },
     });
 
-    const total = await this.prisma.equipment.count({
+    const total = await this.prisma.equipment.count({ where });
+
+    // Calculate global stats for the company
+    const allEquipment = await this.prisma.equipment.findMany({
       where: { companyId: currentUser.companyId },
+      select: {
+        quantity: true,
+        availableQuantity: true,
+        isActive: true,
+      },
     });
+
+    const stats = allEquipment.reduce(
+      (acc, item) => {
+        acc.totalReceived += item.quantity || 0;
+        acc.availableStock += item.availableQuantity || 0;
+        return acc;
+      },
+      { totalReceived: 0, availableStock: 0 },
+    );
 
     return {
       data: equipment,
       total,
+      stats: {
+        ...stats,
+        distributedStock: stats.totalReceived - stats.availableStock,
+        totalTypes: allEquipment.filter(e => e.isActive).length,
+      },
       skip,
       take,
     };
@@ -224,6 +251,11 @@ export class EquipmentService {
           isActive: true,
         };
       } else if (type === 'OUT' || type === 'HANDOVER' || type === 'MAINTENANCE' || type === 'REPAIR') {
+        if (equipment.availableQuantity < quantity) {
+          throw new BadRequestException(
+            `الكمية المتوفرة غير كافية. المتوفر: ${equipment.availableQuantity}`,
+          );
+        }
         updateData = {
           availableQuantity: { decrement: quantity },
         };
