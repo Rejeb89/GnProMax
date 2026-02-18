@@ -38,28 +38,47 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
     { path: '/vehicles', label: t('vehicles'), icon: <Car className="h-4 w-4" /> },
     { path: '/equipment', label: t('equipment'), icon: <Wrench className="h-4 w-4" />, highlight: isEquipmentDetailsPage },
     { path: '/finance', label: t('finance'), icon: <DollarSign className="h-4 w-4" /> },
+    { path: '/users', label: t('usersManagement'), icon: <UserCog className="h-4 w-4" /> },
     { path: '/settings', label: t('settings'), icon: <Settings className="h-4 w-4" /> },
   ];
 
-  const Sidebar = () => (
-    <aside className="w-64 bg-gray-900 text-white shadow-lg hidden lg:block">
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full bg-gray-900 text-white shadow-lg">
       <div className="p-4 sm:p-6 border-b border-gray-700">
         <h1 className="text-lg sm:text-2xl font-bold text-center">نظام إدارة الوحدات الجهوية للحرس الوطني</h1>
       </div>
-      <nav className="mt-4 sm:mt-6">
-        {navigationItems.map((item) => (
-          <button
-            key={item.path}
-            onClick={() => navigate(item.path)}
-            className={`flex w-full items-center gap-3 px-4 sm:px-6 py-2 sm:py-3 text-right hover:bg-gray-800 cursor-pointer transition-colors text-sm ${
-              item.highlight ? 'bg-gray-800' : ''
-            }`}
-          >
-            <span className="h-4 w-4 flex-shrink-0">{item.icon}</span>
-            <span className="truncate">{item.label}</span>
-          </button>
-        ))}
+      <nav className="mt-4 sm:mt-6 flex-1">
+        {navigationItems.map((item) => {
+          const isActive = location.pathname === item.path || item.highlight;
+          return (
+            <button
+              key={item.path}
+              onClick={() => navigate(item.path)}
+              className={`flex w-full items-center gap-3 px-4 sm:px-6 py-2 sm:py-3 text-right hover:bg-gray-800 cursor-pointer transition-colors text-sm ${
+                isActive ? 'bg-gray-800 border-r-4 border-blue-500' : ''
+              }`}
+            >
+              <span className="h-4 w-4 flex-shrink-0">{item.icon}</span>
+              <span className="truncate">{item.label}</span>
+            </button>
+          );
+        })}
       </nav>
+      <div className="p-4 border-t border-gray-700">
+        <button
+          onClick={handleLogout}
+          className="flex w-full items-center gap-3 px-4 py-3 text-right hover:bg-red-900/20 text-red-400 cursor-pointer transition-colors text-sm rounded-lg"
+        >
+          <LogOut className="h-4 w-4 flex-shrink-0" />
+          <span>{t('logout')}</span>
+        </button>
+      </div>
+    </div>
+  );
+
+  const Sidebar = () => (
+    <aside className="w-64 h-full hidden lg:block">
+      <SidebarContent />
     </aside>
   );
 
@@ -70,26 +89,8 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
           <Menu className="h-5 w-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-64 sm:w-80 p-0">
-        <div className="bg-gray-900 text-white h-full">
-          <div className="p-4 sm:p-6 border-b border-gray-700">
-            <h1 className="text-lg sm:text-xl font-bold text-center">نظام إدارة الوحدات الجهوية للحرس الوطني</h1>
-          </div>
-          <nav className="mt-4 sm:mt-6">
-            {navigationItems.map((item) => (
-              <button
-                key={item.path}
-                onClick={() => navigate(item.path)}
-                className={`flex w-full items-center gap-3 px-4 sm:px-6 py-2 sm:py-3 text-right hover:bg-gray-800 cursor-pointer transition-colors text-sm ${
-                  item.highlight ? 'bg-gray-800' : ''
-                }`}
-              >
-                <span className="h-4 w-4 flex-shrink-0">{item.icon}</span>
-                <span className="truncate">{item.label}</span>
-              </button>
-            ))}
-          </nav>
-        </div>
+      <SheetContent side="right" className="w-64 sm:w-80 p-0 border-none">
+        <SidebarContent />
       </SheetContent>
     </Sheet>
   );
@@ -108,9 +109,9 @@ const Layout: React.FC<LayoutProps> = ({ children, title }) => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100" dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className="flex h-screen bg-gray-100 overflow-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Desktop Sidebar */}
-      <div className="hidden lg:block">
+      <div className="hidden lg:block h-full">
         <Sidebar />
       </div>
 

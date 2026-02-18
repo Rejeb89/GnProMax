@@ -20,6 +20,7 @@ export const ar = {
   equipment: 'التجهيز',
   finance: 'الاعتمادات المالية',
   settings: 'الإعدادات',
+  usersManagement: 'إدارة المستخدمين',
   logout: 'تسجيل الخروج',
 
   // Dashboard
