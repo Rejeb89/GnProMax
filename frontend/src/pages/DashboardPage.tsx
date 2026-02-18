@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Users, Car, Wrench, DollarSign, Package, TrendingDown, AlertTriangle, Activity } from 'lucide-react';
+import { Users, Car, Wrench, DollarSign, Package, TrendingDown, AlertTriangle, Activity } from '@/lib/icons';
 
 interface LowStockItem {
   id: string;

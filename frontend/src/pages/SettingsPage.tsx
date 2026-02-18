@@ -6,6 +6,12 @@ import usersService, { CreateUserData } from '@/api/users';
 import useAuthStore from '@/store/authStore';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { User, UserBranch, Branch } from '@/types';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Alert } from '@/components/ui/alert';
 
 interface NewUser {
   email: string;
@@ -248,94 +254,42 @@ function SettingsPage() {
     <Layout title={t('settings')}>
       <div className="space-y-6">
         {/* Tab Navigation */}
-        <div className="bg-white rounded-lg shadow p-2">
-          <div className="flex space-x-4">
-            <button
-              onClick={() => setActiveTab('settings')}
-              className={`px-4 py-2 rounded-md font-medium ${
-                activeTab === 'settings'
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              الإعدادات العامة
-            </button>
-            {isAdmin && (
-              <button
-                onClick={() => setActiveTab('users')}
-                className={`px-4 py-2 rounded-md font-medium ${
-                  activeTab === 'users'
-                    ? 'bg-blue-600 text-white'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                إدارة المستخدمين
-              </button>
-            )}
+        <div className="p-2">
+          <div className="flex gap-2">
+            <Button variant={activeTab === 'settings' ? undefined : 'ghost'} onClick={() => setActiveTab('settings')}>الإعدادات العامة</Button>
+            {isAdmin && <Button variant={activeTab === 'users' ? undefined : 'ghost'} onClick={() => setActiveTab('users')}>إدارة المستخدمين</Button>}
           </div>
         </div>
 
         {activeTab === 'settings' && (
           <>
-            {/* Application Settings */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-2xl font-bold mb-6">{t('applicationSettings')}</h2>
-              {error && <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">{error}</div>}
-              <div style={{ display: 'grid', gap: 12, maxWidth: 600 }}>
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">
-                    {t('siteName')}
-                  </label>
-                  <input
-                    value={siteName}
-                    onChange={(e) => setSiteName(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-right"
-                  />
+            <Card>
+              <CardContent>
+                <h2 className="text-2xl font-bold mb-6">{t('applicationSettings')}</h2>
+                {error && <Alert variant="destructive">{error}</Alert>}
+                <div className="grid gap-4 max-w-2xl">
+                  <div>
+                    <Label>{t('siteName')}</Label>
+                    <Input value={siteName} onChange={(e) => setSiteName(e.target.value)} />
+                  </div>
+                  <div>
+                    <Label>{t('supportEmail')}</Label>
+                    <Input value={supportEmail} onChange={(e) => setSupportEmail(e.target.value)} />
+                  </div>
+                  <div>
+                    <Label>{t('itemsPerPage')}</Label>
+                    <Input type="number" value={itemsPerPage} onChange={(e) => setItemsPerPage(parseInt(e.target.value || '0', 10))} />
+                  </div>
+                  <div className="flex items-center">
+                    <Checkbox id="featureX" checked={enableFeatureX} onCheckedChange={(v) => setEnableFeatureX(!!v)} />
+                    <Label htmlFor="featureX" className="mr-2">{t('enableFeatureX')}</Label>
+                  </div>
+                  <div>
+                    <Button onClick={handleSave} disabled={saving}>{saving ? t('saving') : t('save')}</Button>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">
-                    {t('supportEmail')}
-                  </label>
-                  <input
-                    value={supportEmail}
-                    onChange={(e) => setSupportEmail(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-right"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-900 mb-2">
-                    {t('itemsPerPage')}
-                  </label>
-                  <input
-                    type="number"
-                    value={itemsPerPage}
-                    onChange={(e) => setItemsPerPage(parseInt(e.target.value || '0', 10))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md text-right"
-                  />
-                </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="featureX"
-                    checked={enableFeatureX}
-                    onChange={(e) => setEnableFeatureX(e.target.checked)}
-                    className="h-4 w-4 text-blue-600"
-                  />
-                  <label htmlFor="featureX" className="mr-2 text-sm font-medium text-gray-900">
-                    {t('enableFeatureX')}
-                  </label>
-                </div>
-                <div>
-                  <button
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    {saving ? t('saving') : t('save')}
-                  </button>
-                </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
 
             
             {/* Language Settings */}

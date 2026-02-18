@@ -4,6 +4,11 @@ import Layout from '@/components/Layout';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { equipmentService } from '@/api/equipment';
 import useAuthStore from '@/store/authStore';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Alert } from '@/components/ui/alert';
 
 interface Equipment {
   id: string;
@@ -219,48 +224,27 @@ const EquipmentHandoverPage: React.FC = () => {
           </button>
         </div>
 
-        {/* Error Display */}
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-            {error}
-          </div>
+          <Alert variant="destructive">{error}</Alert>
         )}
 
         {/* Handover Form */}
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-6">معلومات التسليم</h2>
-          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Equipment Search */}
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                اسم التجهيز *
-              </label>
+              <Label>اسم التجهيز *</Label>
               <div className="relative">
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  onFocus={() => setShowDropdown(true)}
-                  placeholder="ابحث عن التجهيز..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-right focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                />
-                
+                <Input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} onFocus={() => setShowDropdown(true)} placeholder="ابحث عن التجهيز..." />
+
                 {showDropdown && filteredEquipment.length > 0 && (
                   <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                     {filteredEquipment.map((item) => (
-                      <div
-                        key={item.id}
-                        onClick={() => handleEquipmentSelect(item)}
-                        className="px-4 py-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
-                      >
+                      <div key={item.id} onClick={() => handleEquipmentSelect(item)} className="px-4 py-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0">
                         <div className="font-medium text-gray-900">{item.name}</div>
-                        <div className="text-sm text-gray-500">
-                          {item.serialNumber} - {item.category}
-                        </div>
-                        <div className="text-sm text-green-600">
-                          الكمية المتوفرة: {item.availableQuantity || 0}
-                        </div>
+                        <div className="text-sm text-gray-500">{item.serialNumber} - {item.category}</div>
+                        <div className="text-sm text-green-600">الكمية المتوفرة: {item.availableQuantity || 0}</div>
                       </div>
                     ))}
                   </div>
@@ -283,14 +267,7 @@ const EquipmentHandoverPage: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 الكمية *
               </label>
-              <input
-                type="number"
-                min="1"
-                max={selectedEquipment?.availableQuantity || 1}
-                value={handoverData.quantity}
-                onChange={(e) => handleInputChange('quantity', parseInt(e.target.value) || 0)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-right focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
+              <Input type="number" min={1} max={selectedEquipment?.availableQuantity || 1} value={handoverData.quantity} onChange={(e) => handleInputChange('quantity', parseInt(e.target.value) || 0)} />
               {selectedEquipment && (
                 <p className="text-sm text-gray-500 mt-1">
                   الكمية المتوفرة: {selectedEquipment.availableQuantity || 0}
@@ -303,16 +280,8 @@ const EquipmentHandoverPage: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 الوحدة المستخدمة
               </label>
-              <select
-                value={handoverData.unit}
-                onChange={(e) => handleInputChange('unit', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-right focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              >
-                {units.map((unit) => (
-                  <option key={unit} value={unit}>
-                    {unit}
-                  </option>
-                ))}
+              <select value={handoverData.unit} onChange={(e) => handleInputChange('unit', e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg text-right">
+                {units.map((unit) => (<option key={unit} value={unit}>{unit}</option>))}
               </select>
             </div>
 
@@ -321,12 +290,7 @@ const EquipmentHandoverPage: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 تاريخ التسليم *
               </label>
-              <input
-                type="date"
-                value={handoverData.handoverDate}
-                onChange={(e) => handleInputChange('handoverDate', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-right focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
+              <Input type="date" value={handoverData.handoverDate} onChange={(e) => handleInputChange('handoverDate', e.target.value)} />
             </div>
 
             {/* Recipient */}
@@ -334,13 +298,7 @@ const EquipmentHandoverPage: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 المتسلم *
               </label>
-              <input
-                type="text"
-                value={handoverData.recipient}
-                onChange={(e) => handleInputChange('recipient', e.target.value)}
-                placeholder="اسم الشخص المتسلم"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-right focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
+              <Input value={handoverData.recipient} onChange={(e) => handleInputChange('recipient', e.target.value)} placeholder="اسم الشخص المتسلم" />
             </div>
 
             {/* Notes */}
@@ -348,25 +306,13 @@ const EquipmentHandoverPage: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 ملاحظات
               </label>
-              <textarea
-                value={handoverData.notes}
-                onChange={(e) => handleInputChange('notes', e.target.value)}
-                rows={4}
-                placeholder="أي ملاحظات إضافية..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-right focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
+              <textarea value={handoverData.notes} onChange={(e) => handleInputChange('notes', e.target.value)} rows={4} placeholder="أي ملاحظات إضافية..." className="w-full px-3 py-2 border border-gray-300 rounded-lg text-right" />
             </div>
           </div>
 
           {/* Submit Button */}
           <div className="mt-6 flex justify-end">
-            <button
-              onClick={handleSubmit}
-              disabled={submitting}
-              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {submitting ? 'جاري التسليم...' : 'تسليم'}
-            </button>
+            <Button onClick={handleSubmit} disabled={submitting}>{submitting ? 'جاري التسليم...' : 'تسليم'}</Button>
           </div>
         </div>
 

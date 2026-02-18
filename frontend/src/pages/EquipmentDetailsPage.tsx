@@ -4,6 +4,8 @@ import Layout from '@/components/Layout';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { equipmentService } from '@/api/equipment';
 import useAuthStore from '@/store/authStore';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 
 interface Equipment {
   id: string;
@@ -321,7 +323,9 @@ const EquipmentDetailsPage: React.FC = () => {
             >
               العودة
             </button>
-          </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </Layout>
     );
@@ -353,38 +357,17 @@ const EquipmentDetailsPage: React.FC = () => {
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900">تفاصيل التجهيز</h1>
           <div className="flex gap-2">
-            <button
-              onClick={handleBack}
-              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
-            >
-              ← العودة
-            </button>
-            <div className="flex gap-2">
-              <button
-                onClick={handlePrint}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-              >
-                &#128438; طباعة
-              </button>
-              <button
-                onClick={handleExportPDF}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-              >
-                &#128195; PDF
-              </button>
-              <button
-                onClick={handleExportExcel}
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
-              >
-                &#128196; Excel
-              </button>
-            </div>
+            <Button variant="ghost" onClick={handleBack}>← العودة</Button>
+            <Button onClick={handlePrint}>طباعة</Button>
+            <Button onClick={handleExportPDF}>PDF</Button>
+            <Button onClick={handleExportExcel}>Excel</Button>
           </div>
         </div>
 
         {/* Equipment Details */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Basic Information */}
             <div className="space-y-4">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">المعلومات الأساسية</h2>

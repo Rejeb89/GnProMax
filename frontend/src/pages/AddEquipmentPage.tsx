@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { equipmentService } from '@/api/equipment';
 import useAuthStore from '@/store/authStore';
@@ -118,55 +122,33 @@ const AddEquipmentPage: React.FC = () => {
   return (
     <Layout title={t('addEquipment')}>
       <div className="space-y-6">
-        {/* Header with Back Button */}
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold text-gray-900">{t('addEquipment')}</h2>
-          <button
-            onClick={() => navigate('/equipment')}
-            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
-          >
-            ← {t('back')}
-          </button>
+          <Button variant="ghost" onClick={() => navigate('/equipment')}>← {t('back')}</Button>
         </div>
 
-        {/* Success Message */}
         {success && operationNumber && (
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-4 rounded">
-            <p className="font-bold">{t('equipmentRegistered')}</p>
-            <p>
-              {t('operationNumber')}: <span className="font-mono">{operationNumber}</span>
-            </p>
-          </div>
+          <Card>
+            <CardContent>
+              <p className="font-bold">{t('equipmentRegistered')}</p>
+              <p>{t('operationNumber')}: <span className="font-mono">{operationNumber}</span></p>
+            </CardContent>
+          </Card>
         )}
 
-        {/* Error Message */}
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-4 rounded">
-            {error}
-          </div>
+          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">{error}</div>
         )}
 
         {/* Form Section */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <Card>
+          <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Equipment Name with Search Dropdown */}
-            <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">
-                {t('equipmentName')} <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder={t('equipmentName')}
-                  value={nameSearch || formData.equipmentName}
-                  onChange={(e) => {
-                    setNameSearch(e.target.value);
-                    setFormData({ ...formData, equipmentName: e.target.value });
-                  }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-right"
-                />
-              </div>
-            </div>
+                <div>
+                  <Label>{t('equipmentName')} <span className="text-red-500">*</span></Label>
+                  <Input value={nameSearch || formData.equipmentName} onChange={(e) => { setNameSearch(e.target.value); setFormData({ ...formData, equipmentName: e.target.value }); }} placeholder={t('equipmentName')} />
+                </div>
 
             {/* Equipment Category with Search Dropdown */}
             <div>
@@ -299,23 +281,12 @@ const AddEquipmentPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Register Button */}
-          <div className="mt-6 flex gap-3 justify-end">
-            <button
-              onClick={() => navigate('/equipment')}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
-            >
-              {t('cancel')}
-            </button>
-            <button
-              onClick={handleRegister}
-              disabled={registering}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
-            >
-              {registering ? t('registering') : t('registerEquipment')}
-            </button>
-          </div>
-        </div>
+            <div className="mt-6 flex gap-3 justify-end">
+              <Button variant="outline" onClick={() => navigate('/equipment')}>{t('cancel')}</Button>
+              <Button onClick={handleRegister} disabled={registering}>{registering ? t('registering') : t('registerEquipment')}</Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </Layout>
   );

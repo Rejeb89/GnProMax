@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
-import { Menu, Home, Users, Car, Wrench, DollarSign, Settings, LogOut, UserCog } from 'lucide-react';
+import { Menu, Home, Users, Car, Wrench, DollarSign, Settings, LogOut, UserCog } from '@/lib/icons';
 
 interface LayoutProps {
   children: React.ReactNode;

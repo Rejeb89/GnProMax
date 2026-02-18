@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { employeeService } from '@/api/employees';
 import { Employee } from '@/types';
 import { useLanguage } from '@/i18n/LanguageContext';
@@ -30,64 +33,51 @@ const EmployeesPage: React.FC = () => {
   return (
     <Layout title={t('employees')}>
       <div className="space-y-6">
-        {/* Header */}
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold text-gray-900">{t('employeeList')}</h3>
-          <button className="btn-primary">{t('addEmployee')}</button>
+          <Button>{t('addEmployee')}</Button>
         </div>
 
-        {/* Table */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          {loading ? (
-            <div className="p-6 text-center text-gray-600">{t('loading')}</div>
-          ) : employees.length === 0 ? (
-            <div className="p-6 text-center text-gray-600">{t('noItemsFound')}</div>
-          ) : (
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="px-6 py-3 text-right text-sm font-medium text-gray-700">
-                    {t('name')}
-                  </th>
-                  <th className="px-6 py-3 text-right text-sm font-medium text-gray-700">
-                    {t('employeeId')}
-                  </th>
-                  <th className="px-6 py-3 text-right text-sm font-medium text-gray-700">
-                    {t('designation')}
-                  </th>
-                  <th className="px-6 py-3 text-right text-sm font-medium text-gray-700">
-                    {t('department')}
-                  </th>
-                  <th className="px-6 py-3 text-right text-sm font-medium text-gray-700">
-                    {t('email')}
-                  </th>
-                  <th className="px-6 py-3 text-right text-sm font-medium text-gray-700">
-                    {t('actions')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {employees.map((emp) => (
-                  <tr key={emp.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-3 text-sm text-gray-900 text-right">
-                      {emp.firstName} {emp.lastName}
-                    </td>
-                    <td className="px-6 py-3 text-sm text-gray-600 text-right">{emp.employeeId}</td>
-                    <td className="px-6 py-3 text-sm text-gray-600 text-right">{emp.designation}</td>
-                    <td className="px-6 py-3 text-sm text-gray-600 text-right">{emp.department}</td>
-                    <td className="px-6 py-3 text-sm text-gray-600 text-right">{emp.email}</td>
-                    <td className="px-6 py-3 text-sm space-x-2 text-right">
-                      <button className="text-blue-600 hover:text-blue-900">{t('edit')}</button>
-                      <button className="text-red-600 hover:text-red-900">{t('delete')}</button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+        <Card>
+          <CardContent>
+            {loading ? (
+              <div className="p-6 text-center text-gray-600">{t('loading')}</div>
+            ) : employees.length === 0 ? (
+              <div className="p-6 text-center text-gray-600">{t('noItemsFound')}</div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t('name')}</TableHead>
+                    <TableHead>{t('employeeId')}</TableHead>
+                    <TableHead>{t('designation')}</TableHead>
+                    <TableHead>{t('department')}</TableHead>
+                    <TableHead>{t('email')}</TableHead>
+                    <TableHead>{t('actions')}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {employees.map((emp) => (
+                    <TableRow key={emp.id}>
+                      <TableCell>{emp.firstName} {emp.lastName}</TableCell>
+                      <TableCell>{emp.employeeId}</TableCell>
+                      <TableCell>{emp.designation}</TableCell>
+                      <TableCell>{emp.department}</TableCell>
+                      <TableCell>{emp.email}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button variant="link">{t('edit')}</Button>
+                          <Button variant="destructive">{t('delete')}</Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
 
-        {/* Pagination */}
         <div className="flex justify-between items-center text-sm text-gray-600">
           <p>{t('total')}: {total} {t('employees')}</p>
         </div>

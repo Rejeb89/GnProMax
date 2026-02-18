@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/Layout';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { equipmentService } from '@/api/equipment';
 
@@ -115,35 +119,20 @@ const EquipmentPage: React.FC = () => {
   return (
     <Layout title={t('equipment')}>
       <div className="space-y-6">
-                  <div className="flex justify-between items-center gap-4">
-                  <h3 className="text-lg font-semibold text-gray-900">{t('equipmentList')}</h3>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => navigate('/equipment/add')}
-                      className="btn-primary"
-                    >
-                      {t('addEquipment')}
-                    </button>
-                    <button
-                      onClick={() => navigate('/equipment/handover')}
-                      className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
-                    >
-                      تسليم تجهيزات
-                    </button>
-                  </div>
-                </div>
-        
-                <div className="mb-4">
-                  <input
-                    type="text"
-                    placeholder="ابحث بالاسم..."
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-        
-                <div className="bg-white rounded-lg shadow">
+        <div className="flex justify-between items-center gap-4">
+          <h3 className="text-lg font-semibold text-gray-900">{t('equipmentList')}</h3>
+          <div className="flex gap-2">
+            <Button onClick={() => navigate('/equipment/add')}>{t('addEquipment')}</Button>
+            <Button variant="secondary" onClick={() => navigate('/equipment/handover')}>تسليم تجهيزات</Button>
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <Input placeholder="ابحث بالاسم..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+        </div>
+
+        <Card>
+          <CardContent>
                   {loading ? (
                     <div className="text-center py-12">
                       <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -171,83 +160,50 @@ const EquipmentPage: React.FC = () => {
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              اسم التجهيز
-                            </th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              الصنف
-                            </th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              الرقم التسلسلي
-                            </th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              تاريخ الشراء
-                            </th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              الحالة
-                            </th>
-                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              الإجراءات
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>{t('name')}</TableHead>
+                            <TableHead>{t('category')}</TableHead>
+                            <TableHead>{t('serialNumber')}</TableHead>
+                            <TableHead>{t('purchaseDate')}</TableHead>
+                            <TableHead>{t('status')}</TableHead>
+                            <TableHead>{t('actions')}</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
                           {filteredEquipment.map((item) => (
-                            <tr key={item.id} className="hover:bg-gray-50">
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                <button
-                                  onClick={() => navigate(`/equipment/${item.id}`)}
-                                  className="text-blue-600 hover:text-blue-900 hover:underline"
-                                >
-                                  {item.name}
-                                </button>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {item.category}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {item.serialNumber}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {new Date(item.purchaseDate).toLocaleDateString('ar-SA')}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
+                            <TableRow key={item.id}>
+                              <TableCell>
+                                <Button variant="link" onClick={() => navigate(`/equipment/${item.id}`)}>{item.name}</Button>
+                              </TableCell>
+                              <TableCell>{item.category}</TableCell>
+                              <TableCell>{item.serialNumber}</TableCell>
+                              <TableCell>{new Date(item.purchaseDate).toLocaleDateString('ar-SA')}</TableCell>
+                              <TableCell>
                                 <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                  item.status === 'ACTIVE' 
-                                    ? 'bg-green-100 text-green-800' 
-                                    : 'bg-red-100 text-red-800'
-                                }`}>
-                                  {item.status === 'ACTIVE' ? 'نشط' : 'غير نشط'}
-                                </span>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                  item.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                }`}>{item.status === 'ACTIVE' ? 'نشط' : 'غير نشط'}</span>
+                              </TableCell>
+                              <TableCell>
                                 <div className="flex gap-2">
-                                  <button
-                                    onClick={() => navigate(`/equipment/${item.id}/edit`)}
-                                    className="text-blue-600 hover:text-blue-900"
-                        >
-                          تعديل
-                        </button>
-                        <button
-                          onClick={() => handleDelete(item.id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          حذف
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                                  <Button variant="link" onClick={() => navigate(`/equipment/${item.id}/edit`)}>{t('edit')}</Button>
+                                  <Button variant="destructive" onClick={() => handleDelete(item.id)}>{t('delete')}</Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        )}
-      </div>
-    </div>
-  </Layout>
-);
+        </div>
+      </Layout>
+    );
 };
+
 export default EquipmentPage;
